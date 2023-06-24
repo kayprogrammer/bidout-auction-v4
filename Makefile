@@ -18,7 +18,7 @@ show-logs:
 	docker-compose logs
 
 serv:
-	python manage.py runserver
+	uvicorn bidout_auction_v4.asgi:application --reload 
 
 mmig:
 	python manage.py makemigrations

@@ -28,7 +28,7 @@
     $ python manage.py migrate 
 ```
 ```bash
-    $ python manage.py runserver
+    $ uvicorn bidout_auction_v4.asgi:application --reload
 ```
 
 - Run With Docker
