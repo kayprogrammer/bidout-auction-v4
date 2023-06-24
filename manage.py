@@ -8,7 +8,8 @@ def main():
     """Run administrative tasks."""
 
     os.environ.setdefault(
-        "DJANGO_SETTINGS_MODULE", f"bidout_auction_v3.settings.{config('SETTINGS')}"
+        "DJANGO_SETTINGS_MODULE",
+        f"bidout_auction_v4.settings.{config('SETTINGS')}",
     )
 
     try:

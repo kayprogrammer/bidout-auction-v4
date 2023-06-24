@@ -107,15 +107,15 @@ MIDDLEWARE = [
     "django.middleware.security.SecurityMiddleware",
     "whitenoise.middleware.WhiteNoiseMiddleware",
     "corsheaders.middleware.CorsMiddleware",
-    'django.contrib.sessions.middleware.SessionMiddleware',
+    "django.contrib.sessions.middleware.SessionMiddleware",
     "django.middleware.common.CommonMiddleware",
-    'django.middleware.csrf.CsrfViewMiddleware',
+    "django.middleware.csrf.CsrfViewMiddleware",
     "django.contrib.auth.middleware.AuthenticationMiddleware",
-    'django.contrib.messages.middleware.MessageMiddleware',
+    "django.contrib.messages.middleware.MessageMiddleware",
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
 ]
 
-ROOT_URLCONF = "bidout_auction_v3.urls"
+ROOT_URLCONF = "bidout_auction_v4.urls"
 
 TEMPLATES = [
     {
@@ -133,7 +133,7 @@ TEMPLATES = [
     },
 ]
 
-WSGI_APPLICATION = "bidout_auction_v3.wsgi.application"
+WSGI_APPLICATION = "bidout_auction_v4.wsgi.application"
 
 
 # Password validation
@@ -210,7 +210,9 @@ logging.config.dictConfig(
             "console": {
                 "format": "%(asctime)s %(name)-12s %(levelname)-8s %(message)s",
             },
-            "file": {"format": "%(asctime)s %(name)-12s %(levelname)-8s %(message)s"},
+            "file": {
+                "format": "%(asctime)s %(name)-12s %(levelname)-8s %(message)s"
+            },
             "django.server": DEFAULT_LOGGING["formatters"]["django.server"],
         },
         "handlers": {
@@ -227,8 +229,16 @@ logging.config.dictConfig(
             "django.server": DEFAULT_LOGGING["handlers"]["django.server"],
         },
         "loggers": {
-            "": {"level": "INFO", "handlers": ["console", "file"], "propagate": False},
-            "apps": {"level": "INFO", "handlers": ["console"], "propagate": False},
+            "": {
+                "level": "INFO",
+                "handlers": ["console", "file"],
+                "propagate": False,
+            },
+            "apps": {
+                "level": "INFO",
+                "handlers": ["console"],
+                "propagate": False,
+            },
             "django.server": DEFAULT_LOGGING["loggers"]["django.server"],
         },
     }
@@ -261,7 +271,11 @@ JAZZMIN_SETTINGS = {
     # Links to put along the top menu
     "topmenu_links": [
         # Url that gets reversed (Permissions can be added)
-        {"name": "Home", "url": "admin:index", "permissions": ["auth.view_user"]},
+        {
+            "name": "Home",
+            "url": "admin:index",
+            "permissions": ["auth.view_user"],
+        },
         # model admin to link to (Permissions checked against model)
         # {"model": "accounts.User"},
         # App with dropdown menu to all its models pages (Permissions checked against models)
@@ -295,11 +309,9 @@ JAZZMIN_SETTINGS = {
     "icons": {
         "accounts.Group": "fas fa-users",
         "accounts.user": "fas fa-user-cog",
-
         "general.sitedetail": "fas fa-user-cog",
         "general.subscriber": "fas fa-user-cog",
         "general.review": "fas fa-user-cog",
-
         "listings.category": "fas fa-user-cog",
         "listings.listing": "fas fa-user-cog",
         "listings.bid": "fas fa-user-cog",

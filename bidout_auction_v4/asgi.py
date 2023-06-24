@@ -1,5 +1,5 @@
 """
-ASGI config for bidout_auction_v3 project.
+ASGI config for bidout_auction_v4 project.
 
 It exposes the ASGI callable as a module-level variable named ``application``.
 
@@ -13,7 +13,8 @@ from django.core.asgi import get_asgi_application
 from decouple import config
 
 os.environ.setdefault(
-    "DJANGO_SETTINGS_MODULE", f"bidout_auction_v3.settings.{config('SETTINGS')}"
+    "DJANGO_SETTINGS_MODULE",
+    f"bidout_auction_v4.settings.{config('SETTINGS')}",
 )
 
 application = get_asgi_application()

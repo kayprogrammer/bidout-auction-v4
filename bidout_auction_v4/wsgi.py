@@ -1,5 +1,5 @@
 """
-WSGI config for bidout_auction_v3 project.
+WSGI config for bidout_auction_v4 project.
 
 It exposes the WSGI callable as a module-level variable named ``application``.
 
@@ -13,7 +13,8 @@ from django.core.wsgi import get_wsgi_application
 from decouple import config
 
 os.environ.setdefault(
-    "DJANGO_SETTINGS_MODULE", f"bidout_auction_v3.settings.{config('SETTINGS')}"
+    "DJANGO_SETTINGS_MODULE",
+    f"bidout_auction_v4.settings.{config('SETTINGS')}",
 )
 
 
