@@ -3,6 +3,7 @@ from apps.accounts.models import User
 from apps.general.models import SiteDetail, Review
 from apps.listings.models import Category, Listing
 from apps.common.models import File
+from apps.common.file_processors import FileProcessor
 
 from pathlib import Path
 from .mappings import listing_mappings, category_mappings, file_mappings
@@ -77,7 +78,7 @@ class CreateData(object):
 
     async def create_reviews(self, reviewer_id) -> None:
         review_mappings = self.review_mappings(reviewer_id)
-        reviews_count = await Review.objects.afilter(show=True).acount()
+        reviews_count = await Review.objects.filter(show=True).acount()
         if reviews_count < 1:
             reviews_to_create = [Review(**review) for review in review_mappings]
             await Review.objects.abulk_create(reviews_to_create)
@@ -104,7 +105,7 @@ class CreateData(object):
 
     async def create_categories(self) -> List[UUID]:
         categories = await Category.objects.all()
-        if categories.count() < 1:
+        if await (categories.acount()) < 1:
             categories_to_create = [
                 Category(**category) for category in category_mappings
             ]
@@ -113,7 +114,7 @@ class CreateData(object):
 
     async def create_listings(self, category_ids, auctioneer_id) -> None:
         listings = await Listing.objects.all()
-        if listings.count() < 1:
+        if (await listings.acount()) < 1:
             files_to_create = [File(**file) for file in file_mappings]
             files = await File.objects.abulk_create(files_to_create)
             updated_listing_mappings = []

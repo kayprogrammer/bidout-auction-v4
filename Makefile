@@ -26,6 +26,9 @@ mmig:
 mig:
 	python manage.py migrate
 
+init:
+	python manage.py initial_data
+	
 shell:
 	python manage.py shell
 

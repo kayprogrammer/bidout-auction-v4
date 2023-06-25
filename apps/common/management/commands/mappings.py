@@ -16,11 +16,4 @@ category_mappings = [
     {"name": "Fashion", "slug": "fashion"},
 ]
 
-file_mappings = [
-    {"resource_type": "image/png"},
-    {"resource_type": "image/png"},
-    {"resource_type": "image/png"},
-    {"resource_type": "image/png"},
-    {"resource_type": "image/png"},
-    {"resource_type": "image/png"},
-]
+file_mappings = [{"resource_type": "image/png"} for i in range(6)]
