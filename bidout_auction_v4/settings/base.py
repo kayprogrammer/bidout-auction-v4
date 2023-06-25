@@ -210,9 +210,7 @@ logging.config.dictConfig(
             "console": {
                 "format": "%(asctime)s %(name)-12s %(levelname)-8s %(message)s",
             },
-            "file": {
-                "format": "%(asctime)s %(name)-12s %(levelname)-8s %(message)s"
-            },
+            "file": {"format": "%(asctime)s %(name)-12s %(levelname)-8s %(message)s"},
             "django.server": DEFAULT_LOGGING["formatters"]["django.server"],
         },
         "handlers": {
