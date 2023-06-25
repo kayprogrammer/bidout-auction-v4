@@ -1,4 +1,5 @@
 from django.conf import settings
+from django.utils import timezone
 from apps.accounts.models import User
 from apps.general.models import SiteDetail, Review
 from apps.listings.models import Category, Listing
@@ -7,9 +8,10 @@ from apps.common.file_processors import FileProcessor
 
 from pathlib import Path
 from .mappings import listing_mappings, category_mappings, file_mappings
-from datetime import datetime, timedelta
+from datetime import timedelta
 from typing import List
 from uuid import UUID
+from asgiref.sync import sync_to_async
 import os, random
 
 CURRENT_DIR = Path(__file__).resolve().parent
@@ -103,17 +105,18 @@ class CreateData(object):
             },
         ]
 
-    async def create_categories(self) -> List[UUID]:
-        categories = await Category.objects.all()
-        if await (categories.acount()) < 1:
+    @sync_to_async
+    def create_categories(self) -> List[UUID]:
+        categories = Category.objects.all()
+        if categories.count() < 1:
             categories_to_create = [
                 Category(**category) for category in category_mappings
             ]
-            categories = await Category.objects.abulk_create(categories_to_create)
-        return categories.values_list("id", flat=True)
+            categories = Category.objects.bulk_create(categories_to_create)
+        return [category.id for category in categories]
 
     async def create_listings(self, category_ids, auctioneer_id) -> None:
-        listings = await Listing.objects.all()
+        listings = Listing.objects.all()
         if (await listings.acount()) < 1:
             files_to_create = [File(**file) for file in file_mappings]
             files = await File.objects.abulk_create(files_to_create)
@@ -124,7 +127,7 @@ class CreateData(object):
                         "category_id": random.choice(category_ids),
                         "desc": "Korem ipsum dolor amet, consectetur adipiscing elit. Maece nas in pulvinar neque. Nulla finibus lobortis pulvinar. Donec a consectetur nulla.",
                         "auctioneer_id": auctioneer_id,
-                        "closing_date": datetime.now() + timedelta(days=7 + idx),
+                        "closing_date": timezone.now() + timedelta(days=7 + idx),
                         "image_id": files[idx].id,
                     }
                 )

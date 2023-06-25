@@ -22,7 +22,7 @@ class UserAdmin(BaseUserAdmin):
     ordering = ["email"]
 
     list_display = [
-        "pkid",
+        "pk",
         "first_name",
         "last_name",
         "email",

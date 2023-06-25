@@ -160,7 +160,7 @@ AUTH_PASSWORD_VALIDATORS = [
 
 LANGUAGE_CODE = "en-us"
 
-TIME_ZONE = "Africa/Lagos"
+TIME_ZONE = "UTC"
 
 USE_I18N = True
 
@@ -248,13 +248,13 @@ JAZZMIN_SETTINGS = {
     # Title on the login screen (19 chars max) (defaults to current_admin_site.site_header if absent or None)
     "site_header": "B.A V4",
     # Logo to use for your site, must be present in static files, used for brand on top left
-    # "site_logo": "/media/logo.jpeg",
+    "site_logo": "media/banner2-icon3.png",
     # CSS classes that are applied to the logo above
     "site_logo_classes": "img-circle",
     # Logo to use for your site, must be present in static files, used for login form logo (defaults to site_logo)
-    # "login_logo": "/media/logo.jpeg",
+    "login_logo": "media/banner2-icon3.png",
     # Relative path to a favicon for your site, will default to site_logo if absent (ideally 32x32 px)
-    # "site_icon": "/media/whatsapp.png",
+    "site_icon": "media/logo.png",
     # Welcome text on the login screen
     "welcome_sign": "Welcome to the Bidout Auction v4 Admin Section",
     # Copyright on the footer
@@ -307,13 +307,16 @@ JAZZMIN_SETTINGS = {
     "icons": {
         "accounts.Group": "fas fa-users",
         "accounts.user": "fas fa-user-cog",
-        "general.sitedetail": "fas fa-user-cog",
-        "general.subscriber": "fas fa-user-cog",
-        "general.review": "fas fa-user-cog",
-        "listings.category": "fas fa-user-cog",
-        "listings.listing": "fas fa-user-cog",
-        "listings.bid": "fas fa-user-cog",
-        "listings.watchlist": "fas fa-user-cog",
+        "common.file": "fas fa-image",
+        "common.guestuser": "fas fa-users",
+        "general.sitedetail": "fas fa-info-circle",
+        "general.subscriber": "fas fa-users",
+        "general.review": "fas fa-comments",
+        "listings.category": "fas fa-list",
+        "listings.listing": "fas fa-list-alt",
+        "listings.bid": "fas fa-dollar-sign",
+        "listings.watchlist": "fas fa-heart",
+        "sites.site": "fas fa-globe",
     },
     # Icons that are used when one is not manually specified
     "default_icon_parents": "fas fa-chevron-circle-right",
@@ -328,6 +331,7 @@ JAZZMIN_SETTINGS = {
         "auth.user": "collapsible",
         "auth.group": "vertical_tabs",
     },
+    # "related_modal_active": True # Won't work in some browsers
 }
 
 EMAIL_OTP_EXPIRE_SECONDS = config("EMAIL_OTP_EXPIRE_SECONDS")

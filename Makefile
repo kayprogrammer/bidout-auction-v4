@@ -20,11 +20,19 @@ show-logs:
 serv:
 	uvicorn bidout_auction_v4.asgi:application --reload 
 
-mmig:
-	python manage.py makemigrations
+mmig: # run with "make mmig" or "make mmig app='app'"
+	if [ -z "$(app)" ]; then \
+		python manage.py makemigrations; \
+	else \
+		python manage.py makemigrations "$(app)"; \
+	fi
 
-mig:
-	python manage.py migrate
+mig: # run with "make mig" or "make mig app='app'"
+	if [ -z "$(app)" ]; then \
+		python manage.py migrate; \
+	else \
+		python manage.py migrate "$(app)"; \
+	fi
 
 init:
 	python manage.py initial_data
