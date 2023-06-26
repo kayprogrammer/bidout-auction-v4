@@ -55,7 +55,7 @@ class Listing(BaseModel):
         return self.time_left_seconds
 
     @property
-    def image(self):
+    def get_image(self):
         image = self.image
         if image:
             return FileProcessor.generate_file_url(

@@ -39,7 +39,10 @@ def custom_exception_handler(exc, context):
                 message="Invalid Entry", data=errors, status_code=422
             )
         else:
-            return CustomResponse.error(message=exc.detail, status=response.status_code)
+            return CustomResponse.error(
+                message=exc.detail if hasattr(exc, "detail") else exc,
+                status=response.status_code,
+            )
     except:
         print(exc)
         return CustomResponse.error(message="Server Error", status_code=500)

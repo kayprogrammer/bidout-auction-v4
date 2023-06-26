@@ -51,9 +51,10 @@ class ReviewsView(APIView):
         description="This endpoint retrieves a few reviews of the application",
     )
     async def get(self, request):
-        reviews = await sync_to_async(Review.objects.filter, thread_sensitive=True)(
-            show=True
-        )
-        print(reviews)
+        reviews = (
+            await sync_to_async(list)(
+                Review.objects.filter(show=True).select_related("reviewer")
+            )
+        )[:3]
         serializer = self.serializer_class(reviews, many=True)
         return CustomResponse.success(message="Reviews fetched", data=serializer.data)

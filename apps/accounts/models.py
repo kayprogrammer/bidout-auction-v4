@@ -44,7 +44,7 @@ class User(AbstractBaseUser, PermissionsMixin):
         return f"{self.first_name} {self.last_name}"
 
     @property
-    def avatar(self):
+    def get_avatar(self):
         avatar = self.avatar
         if avatar:
             return FileProcessor.generate_file_url(
