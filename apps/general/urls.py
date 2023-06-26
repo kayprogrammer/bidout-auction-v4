@@ -1,6 +1,6 @@
 from django.urls import path
 
-from apps.general import views
+from . import views
 
 urlpatterns = [
     path("site-detail/", views.SiteDetailView.as_view()),

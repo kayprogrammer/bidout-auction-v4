@@ -1,25 +1,23 @@
 from http import HTTPStatus
 from rest_framework.views import exception_handler
-from rest_framework.exceptions import AuthenticationFailed, ValidationError
+from rest_framework.exceptions import (
+    AuthenticationFailed,
+    ValidationError,
+    APIException,
+)
 
 from apps.common.responses import CustomResponse
 
 
-class Error(Exception):
-    """Base class for exceptions in this module."""
+class RequestError(APIException):
+    default_detail = "An error occured"
 
-    pass
-
-
-class RequestError(Error):
-    def __init__(
-        self, err_msg: str, status_code: int = 400, data: dict = None, *args: object
-    ) -> None:
+    def __init__(self, err_msg: str, status_code: int = 400, data: dict = None) -> None:
         self.status_code = HTTPStatus(status_code)
         self.err_msg = err_msg
         self.data = data
 
-        super().__init__(*args)
+        super().__init__()
 
 
 def custom_exception_handler(exc, context):
@@ -29,8 +27,9 @@ def custom_exception_handler(exc, context):
             exc_list = str(exc).split("DETAIL: ")
             return CustomResponse.error(message=exc_list[-1], status_code=401)
         elif isinstance(exc, RequestError):
-            print(exc)
-            return CustomResponse.error(message="Invalid Entry", data=exc.detail)
+            return CustomResponse.error(
+                message=exc.err_msg, data=exc.data, status_code=exc.status_code
+            )
         elif isinstance(exc, ValidationError):
             errors = exc.detail
             for key in errors:
@@ -46,13 +45,3 @@ def custom_exception_handler(exc, context):
     except:
         print(exc)
         return CustomResponse.error(message="Server Error", status_code=500)
-
-
-# def request_error_handler(_: Request, exc: RequestError):
-#     err_dict = {
-#         "status": "failure",
-#         "message": exc.err_msg,
-#     }
-#     if exc.data:
-#         err_dict["data"] = exc.data
-#     return Response(status_code=exc.status_code, content=err_dict)

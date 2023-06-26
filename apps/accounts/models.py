@@ -63,8 +63,7 @@ class Jwt(BaseModel):
 
 class Otp(BaseModel):
     user = models.OneToOneField(User, on_delete=models.CASCADE)
-    access = models.TextField()
-    refresh = models.TextField()
+    code = models.IntegerField()
 
     def check_expiration(self):
         now = datetime.utcnow()
