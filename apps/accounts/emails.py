@@ -37,7 +37,7 @@ class Util:
 
     async def send_password_change_otp(user):
         subject = "Your account password reset email"
-        code = random.randint(1000, 9999)
+        code = random.randint(100000, 999999)
         message = render_to_string(
             "password-reset.html",
             {

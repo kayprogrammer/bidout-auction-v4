@@ -40,3 +40,11 @@ class VerifyOtpSerializer(serializers.Serializer):
 
 class ResendOtpSerializer(serializers.Serializer):
     email = serializers.EmailField()
+
+
+class SetNewPasswordSerializer(serializers.Serializer):
+    email = serializers.EmailField()
+    otp = serializers.IntegerField()
+    password = serializers.CharField(
+        min_length=8, error_messages={"min_length": _("{min_length} characters max.")}
+    )

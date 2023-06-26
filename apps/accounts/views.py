@@ -2,7 +2,12 @@ from adrf.views import APIView
 from apps.accounts.emails import Util
 
 from apps.accounts.models import Otp, User
-from .serializers import RegisterSerializer, ResendOtpSerializer, VerifyOtpSerializer
+from .serializers import (
+    RegisterSerializer,
+    ResendOtpSerializer,
+    SetNewPasswordSerializer,
+    VerifyOtpSerializer,
+)
 from drf_spectacular.utils import extend_schema
 from apps.common.responses import CustomResponse
 
@@ -17,11 +22,11 @@ class RegisterView(APIView):
         description="This endpoint registers new users into our application",
     )
     async def post(self, request):
-        # Check for existing user
         serializer = self.serializer_class(data=request.data)
         serializer.is_valid(raise_exception=True)
         data = serializer.validated_data
 
+        # Check for existing user
         existing_user = await User.objects.get_or_none(email=data["email"])
         if existing_user:
             raise RequestError(
@@ -105,59 +110,60 @@ class ResendVerificationEmailView(APIView):
         )
 
 
-# class SendPasswordResetOtpView(Controller):
-#     path = "/send-password-reset-otp"
+class SendPasswordResetOtpView(APIView):
+    serializer_class = ResendOtpSerializer
 
-#     @post(
-#         summary="Send Password Reset Otp",
-#         description="This endpoint sends new password reset otp to the user's email",
-#         status_code=200,
-#     )
-#     async def send_password_reset_otp(
-#         self, data: RequestOtpSchema, db: AsyncSession
-#     ) -> ResponseSchema:
-#         user_by_email = await user_manager.get_by_email(db, data.email)
-#         if not user_by_email:
-#             raise RequestError(err_msg="Incorrect Email", status_code=404)
+    @extend_schema(
+        summary="Send Password Reset Otp",
+        description="This endpoint sends new password reset otp to the user's email",
+    )
+    async def post(self, request):
+        serializer = self.serializer_class(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        email = serializer.validated_data["email"]
 
-#         # Send password reset email
-#         await send_email(db, user_by_email, "reset")
+        user = await User.objects.get_or_none(email=email)
+        if not user:
+            raise RequestError(err_msg="Incorrect Email", status_code=404)
 
-#         return ResponseSchema(message="Password otp sent")
+        # Send password reset email
+        await Util.send_password_change_otp(user)
+        return CustomResponse.success(message="Password otp sent")
 
 
-# class SetNewPasswordView(Controller):
-#     path = "/set-new-password"
+class SetNewPasswordView(APIView):
+    serializer_class = SetNewPasswordSerializer
 
-#     @post(
-#         summary="Set New Password",
-#         description="This endpoint verifies the password reset otp",
-#         status_code=200,
-#     )
-#     async def set_new_password(
-#         self, data: SetNewPasswordSchema, db: AsyncSession
-#     ) -> ResponseSchema:
-#         email = data.email
-#         otp_code = data.otp
-#         password = data.password
+    @extend_schema(
+        summary="Set New Password",
+        description="This endpoint verifies the password reset otp",
+    )
+    async def post(self, request):
+        serializer = self.serializer_class(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        data = serializer.validated_data
 
-#         user_by_email = await user_manager.get_by_email(db, email)
-#         if not user_by_email:
-#             raise RequestError(err_msg="Incorrect Email", status_code=404)
+        email = data["email"]
+        code = data["otp"]
+        password = data["password"]
 
-#         otp = await otp_manager.get_by_user_id(db, user_by_email.id)
-#         if not otp or otp.code != otp_code:
-#             raise RequestError(err_msg="Incorrect Otp", status_code=404)
+        user = await User.objects.get_or_none(email=email)
+        if not user:
+            raise RequestError(err_msg="Incorrect Email", status_code=404)
 
-#         if otp.check_expiration():
-#             raise RequestError(err_msg="Expired Otp")
+        otp = await Otp.objects.get_or_none(user=user)
+        if not otp or otp.code != code:
+            raise RequestError(err_msg="Incorrect Otp", status_code=404)
 
-#         await user_manager.update(db, user_by_email, {"password": password})
+        if otp.check_expiration():
+            raise RequestError(err_msg="Expired Otp")
 
-#         # Send password reset success email
-#         await send_email(db, user_by_email, "reset-success")
+        user.set_password(password)
+        await user.asave()
 
-#         return ResponseSchema(message="Password reset successful")
+        # Send password reset success email
+        Util.password_reset_confirmation(user)
+        return CustomResponse.success(message="Password reset successful")
 
 
 # class LoginView(Controller):
