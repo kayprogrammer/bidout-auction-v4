@@ -5,6 +5,7 @@ from apps.common.models import BaseModel, File, GuestUser
 from datetime import datetime
 from autoslug import AutoSlugField
 from apps.common.fields import DateTimeWithoutTZField as DateTimeField
+from apps.common.file_processors import FileProcessor
 
 
 class Category(BaseModel):
@@ -52,6 +53,17 @@ class Listing(BaseModel):
         if not self.active:
             return 0
         return self.time_left_seconds
+
+    @property
+    def image(self):
+        image = self.image
+        if image:
+            return FileProcessor.generate_file_url(
+                key=self.image_id,
+                folder="listings",
+                content_type=image.resource_type,
+            )
+        return None
 
 
 class Bid(BaseModel):

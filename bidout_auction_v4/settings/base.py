@@ -22,7 +22,7 @@ DEBUG = config("DEBUG")
 ALLOWED_HOSTS = config("ALLOWED_HOSTS").split(" ")
 
 REST_FRAMEWORK = {
-    "EXCEPTION_HANDLER": "apps.common.exceptions.exception_handler",
+    "EXCEPTION_HANDLER": "apps.common.exceptions.custom_exception_handler",
     "DEFAULT_PAGINATION_CLASS": "rest_framework.pagination.PageNumberPagination",
     "PAGE_SIZE": 20,
     "DEFAULT_PERMISSION_CLASSES": ("rest_framework.permissions.AllowAny",),
@@ -49,6 +49,7 @@ THIRD_PARTY_APPS = [
     "corsheaders",
     "cloudinary",
     "debug_toolbar",
+    "drf_spectacular",
 ]
 
 LOCAL_APPS = [

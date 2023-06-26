@@ -8,7 +8,7 @@ from apps.accounts.models import User
 
 class SiteDetail(BaseModel):
     name = models.CharField(max_length=300, default="Kay's Auction House")
-    email = models.CharField(max_length=300, default="kayprogrammer1@gmail.com")
+    email = models.EmailField(default="kayprogrammer1@gmail.com")
     phone = models.CharField(max_length=300, default="+2348133831036")
     address = models.CharField(max_length=300, default="234, Lagos, Nigeria")
     fb = models.CharField(

@@ -75,7 +75,7 @@ class CreateData(object):
         return reviewer
 
     async def create_sitedetail(self) -> SiteDetail:
-        sitedetail = await SiteDetail.objects.aget_or_create()
+        sitedetail, created = await SiteDetail.objects.aget_or_create()
         return sitedetail
 
     async def create_reviews(self, reviewer_id) -> None:

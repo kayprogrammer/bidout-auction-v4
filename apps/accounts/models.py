@@ -7,6 +7,7 @@ from apps.common.models import BaseModel, File
 from datetime import datetime
 from django.conf import settings
 from apps.common.fields import DateTimeWithoutTZField as DateTimeField
+from apps.common.file_processors import FileProcessor
 from .managers import CustomUserManager
 
 
@@ -41,6 +42,17 @@ class User(AbstractBaseUser, PermissionsMixin):
     @property
     def full_name(self):
         return f"{self.first_name} {self.last_name}"
+
+    @property
+    def avatar(self):
+        avatar = self.avatar
+        if avatar:
+            return FileProcessor.generate_file_url(
+                key=self.avatar_id,
+                folder="avatars",
+                content_type=avatar.resource_type,
+            )
+        return None
 
 
 class Jwt(BaseModel):
