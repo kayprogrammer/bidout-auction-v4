@@ -27,6 +27,9 @@ class Util:
         otp = await accounts_models.Otp.objects.get_or_none(user=user)
         if not otp:
             await accounts_models.Otp.objects.acreate(user=user, code=code)
+        else:
+            otp.code = code
+            await otp.asave()
 
         email_message = EmailMessage(subject=subject, body=message, to=[user.email])
         email_message.content_subtype = "html"
@@ -45,6 +48,10 @@ class Util:
         otp = await accounts_models.Otp.objects.get_or_none(user=user)
         if not otp:
             await accounts_models.Otp.objects.acreate(user=user, code=code)
+        else:
+            otp.code = code
+            await otp.asave()
+
         email_message = EmailMessage(subject=subject, body=message, to=[user.email])
         email_message.content_subtype = "html"
 
@@ -68,7 +75,7 @@ class Util:
         message = render_to_string(
             "welcome.html",
             {
-                "user": user,
+                "name": user.full_name,
             },
         )
         email_message = EmailMessage(subject=subject, body=message, to=[user.email])

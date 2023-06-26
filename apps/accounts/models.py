@@ -68,6 +68,6 @@ class Otp(BaseModel):
     def check_expiration(self):
         now = datetime.utcnow()
         diff = now - self.updated_at
-        if diff.total_seconds() > settings.EMAIL_OTP_EXPIRE_SECONDS:
+        if diff.total_seconds() > int(settings.EMAIL_OTP_EXPIRE_SECONDS):
             return True
         return False

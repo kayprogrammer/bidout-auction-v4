@@ -1,8 +1,8 @@
 from adrf.views import APIView
 from apps.accounts.emails import Util
 
-from apps.accounts.models import User
-from .serializers import RegisterSerializer
+from apps.accounts.models import Otp, User
+from .serializers import RegisterSerializer, ResendOtpSerializer, VerifyOtpSerializer
 from drf_spectacular.utils import extend_schema
 from apps.common.responses import CustomResponse
 
@@ -37,63 +37,72 @@ class RegisterView(APIView):
         await Util.send_activation_otp(user)
 
         return CustomResponse.success(
-            message="Registration successful", data={"email": data["email"]}
+            message="Registration successful",
+            data={"email": data["email"]},
+            status_code=201,
         )
 
 
-# class VerifyEmailView(Controller):
-#     path = "/verify-email"
+class VerifyEmailView(APIView):
+    serializer_class = VerifyOtpSerializer
 
-#     @post(
-#         summary="Verify a user's email",
-#         description="This endpoint verifies a user's email",
-#         status_code=200,
-#     )
-#     async def verify_email(
-#         self, data: VerifyOtpSchema, db: AsyncSession
-#     ) -> ResponseSchema:
-#         user_by_email = await user_manager.get_by_email(db, data.email)
+    @extend_schema(
+        summary="Verify a user's email",
+        description="This endpoint verifies a user's email",
+    )
+    async def post(self, request):
+        serializer = self.serializer_class(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        email = serializer.validated_data["email"]
+        otp_code = serializer.validated_data["otp"]
 
-#         if not user_by_email:
-#             raise RequestError(err_msg="Incorrect Email", status_code=404)
+        user = await User.objects.get_or_none(email=email)
 
-#         if user_by_email.is_email_verified:
-#             return ResponseSchema(message="Email already verified")
+        if not user:
+            raise RequestError(err_msg="Incorrect Email", status_code=404)
 
-#         otp = await otp_manager.get_by_user_id(db, user_by_email.id)
-#         if not otp or otp.code != data.otp:
-#             raise RequestError(err_msg="Incorrect Otp", status_code=404)
-#         if otp.check_expiration():
-#             raise RequestError(err_msg="Expired Otp")
+        if user.is_email_verified:
+            return CustomResponse.success(message="Email already verified")
 
-#         user = await user_manager.update(db, user_by_email, {"is_email_verified": True})
-#         await otp_manager.delete(db, otp)
-#         # Send welcome email
-#         await send_email(db, user, "welcome")
-#         return ResponseSchema(message="Account verification successful")
+        otp = await Otp.objects.get_or_none(user=user)
+        if not otp or otp.code != otp_code:
+            raise RequestError(err_msg="Incorrect Otp", status_code=404)
+        if otp.check_expiration():
+            raise RequestError(err_msg="Expired Otp")
+
+        user.is_email_verified = True
+        await user.asave()
+        await otp.adelete()
+
+        # Send welcome email
+        Util.welcome_email(user)
+        return CustomResponse.success(
+            message="Account verification successful", status_code=200
+        )
 
 
-# class ResendVerificationEmailView(Controller):
-#     path = "/resend-verification-email"
+class ResendVerificationEmailView(APIView):
+    serializer_class = ResendOtpSerializer
 
-#     @post(
-#         summary="Resend Verification Email",
-#         description="This endpoint resends new otp to the user's email",
-#         status_code=200,
-#     )
-#     async def resend_verification_email(
-#         self, data: RequestOtpSchema, db: AsyncSession
-#     ) -> ResponseSchema:
-#         user_by_email = await user_manager.get_by_email(db, data.email)
-#         if not user_by_email:
-#             raise RequestError(err_msg="Incorrect Email", status_code=404)
-#         if user_by_email.is_email_verified:
-#             return ResponseSchema(message="Email already verified")
+    @extend_schema(
+        summary="Resend Verification Email",
+        description="This endpoint resends new otp to the user's email",
+    )
+    async def post(self, request):
+        serializer = self.serializer_class(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        email = serializer.validated_data["email"]
+        user = await User.objects.get_or_none(email=email)
+        if not user:
+            raise RequestError(err_msg="Incorrect Email", status_code=404)
+        if user.is_email_verified:
+            return CustomResponse.success(message="Email already verified")
 
-#         # Send verification email
-#         await send_email(db, user_by_email, "activate")
-
-#         return ResponseSchema(message="Verification email sent")
+        # Send verification email
+        await Util.send_activation_otp(user)
+        return CustomResponse.success(
+            message="Verification email sent", status_code=200
+        )
 
 
 # class SendPasswordResetOtpView(Controller):

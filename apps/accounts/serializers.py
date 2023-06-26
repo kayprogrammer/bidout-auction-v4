@@ -31,3 +31,12 @@ class RegisterSerializer(serializers.Serializer):
                 {"terms_agreement": "You must agree to terms and conditions"}
             )
         return attrs
+
+
+class VerifyOtpSerializer(serializers.Serializer):
+    email = serializers.EmailField()
+    otp = serializers.IntegerField()
+
+
+class ResendOtpSerializer(serializers.Serializer):
+    email = serializers.EmailField()
