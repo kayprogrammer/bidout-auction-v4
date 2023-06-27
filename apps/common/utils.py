@@ -35,7 +35,7 @@ def is_uuid(value):
 
 # Test Utils
 class TestUtil:
-    def test_user():
+    def new_user():
         user_dict = {
             "first_name": "Test",
             "last_name": "Name",
