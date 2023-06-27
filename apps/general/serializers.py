@@ -1,6 +1,4 @@
 from rest_framework import serializers
-from apps.common.file_processors import FileProcessor
-
 
 class SiteDetailSerializer(serializers.Serializer):
     name = serializers.CharField()
@@ -21,9 +19,9 @@ class ReviewsSerializer(serializers.Serializer):
     reviewer = serializers.SerializerMethodField()
     text = serializers.CharField()
 
-    def get_reviewer(self, obj):
+    def get_reviewer(self, obj) -> dict:
         reviewer = obj.reviewer
         return {
             "name": reviewer.full_name,
-            "avatar": reviewer.avatar,
+            "avatar": reviewer.get_avatar,
         }

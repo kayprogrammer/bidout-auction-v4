@@ -266,6 +266,7 @@ class RefreshTokensView(APIView):
 
 
 class LogoutView(APIView):
+    serializer_class = None
     permission_classes = (IsAuthenticatedCustom,)
 
     @extend_schema(
