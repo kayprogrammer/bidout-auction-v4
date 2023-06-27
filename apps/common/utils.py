@@ -35,36 +35,39 @@ def is_uuid(value):
 
 # Test Utils
 class TestUtil:
-    async def test_user():
+    def test_user():
         user_dict = {
             "first_name": "Test",
             "last_name": "Name",
             "email": "test@example.com",
-            "password": "testpassword",
         }
-        user = await User.objects.create_user(**user_dict)
+        user = User(**user_dict)
+        user.set_password("testpassword")
+        user.save()
         return user
 
-    async def verified_user():
+    def verified_user():
         user_dict = {
             "first_name": "Test",
             "last_name": "Verified",
             "email": "testverifieduser@example.com",
-            "password": "testpassword",
             "is_email_verified": True,
         }
-        user = await User.objects.create_user(**user_dict)
+        user = User(**user_dict)
+        user.set_password("testpassword")
+        user.save()
         return user
 
-    async def another_verified_user():
+    def another_verified_user():
         create_user_dict = {
             "first_name": "AnotherTest",
             "last_name": "UserVerified",
             "email": "anothertestverifieduser@example.com",
-            "password": "anothertestverifieduser123",
             "is_email_verified": True,
         }
-        user = await User.objects.create_user(**create_user_dict)
+        user = User(**create_user_dict)
+        user.set_password("anothertestverifieduser123")
+        user.save()
         return user
 
     async def authorized_client(verified_user, client):

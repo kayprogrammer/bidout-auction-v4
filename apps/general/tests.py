@@ -1,4 +1,3 @@
-from asgiref.sync import sync_to_async
 from rest_framework.test import APITestCase
 
 from apps.general.models import Review
@@ -11,7 +10,6 @@ class TestGeneral(APITestCase):
     subscriber_url = "/api/v4/general/subscribe/"
     reviews_url = "/api/v4/general/reviews/"
 
-    @sync_to_async
     def setUp(self):
         verified_user = TestUtil.verified_user()
         review_dict = {
@@ -49,7 +47,6 @@ class TestGeneral(APITestCase):
     def test_retrieve_reviews(self):
         # Check response validity
         response = self.client.get(self.reviews_url)
-        print(response.json())
         self.assertEqual(response.status_code, 200)
         self.assertEqual(
             response.json(),

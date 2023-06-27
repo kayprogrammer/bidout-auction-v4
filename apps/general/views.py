@@ -56,6 +56,5 @@ class ReviewsView(APIView):
                 Review.objects.filter(show=True).select_related("reviewer")
             )
         )[:3]
-        print(reviews)
         serializer = self.serializer_class(reviews, many=True)
         return CustomResponse.success(message="Reviews fetched", data=serializer.data)
