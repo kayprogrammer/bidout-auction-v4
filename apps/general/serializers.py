@@ -1,5 +1,6 @@
 from rest_framework import serializers
 
+
 class SiteDetailSerializer(serializers.Serializer):
     name = serializers.CharField()
     email = serializers.EmailField()
