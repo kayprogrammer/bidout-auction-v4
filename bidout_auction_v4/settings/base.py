@@ -81,7 +81,7 @@ CORS_ALLOW_CREDENTIALS = True
 CORS_ALLOW_METHODS = ("GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS")
 
 SPECTACULAR_SETTINGS = {
-    "TITLE": "NOTE API",
+    "TITLE": "BIDOUT AUCTION API",
     "APPEND_COMPONENTS": {
         "securitySchemes": {
             "bearerAuth": {
@@ -103,8 +103,8 @@ SPECTACULAR_SETTINGS = {
             "guestUserID": [],
         }
     ],
-    "DESCRIPTION": "A Simple Note API",
-    "VERSION": "1.0.0",
+    "DESCRIPTION": "A Simple Bidding API",
+    "VERSION": "4.0.0",
     "SERVE_INCLUDE_SCHEMA": False,
     "SCHEMA_PATH_PREFIX": r"/api/v[0-9]",
     "AUTHENTICATION_WHITELIST": [],
