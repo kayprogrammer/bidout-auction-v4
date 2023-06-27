@@ -88,12 +88,19 @@ SPECTACULAR_SETTINGS = {
                 "type": "http",
                 "scheme": "bearer",
                 "bearerFormat": "JWT",
-            }
+            },
+            "guestUserID": {
+                "type": "apiKey",
+                "in": "header",
+                "name": "guestUserID",
+                "description": "For guest watchlists. Get ID from '/api/v4/listings/watchlist' POST endpoint",
+            },
         }
     },
     "SECURITY": [
         {
             "bearerAuth": [],
+            "guestUserID": [],
         }
     ],
     "DESCRIPTION": "A Simple Note API",

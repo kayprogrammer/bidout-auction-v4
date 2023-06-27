@@ -1,8 +1,15 @@
 from adrf.views import APIView
-from apps.accounts.emails import Util
 
-from apps.accounts.models import Otp, User
+from apps.common.utils import IsAuthenticatedCustom, is_uuid
+from .auth import Authentication
+from .emails import Util
+
+from .models import Jwt, Otp, User
+from apps.common.models import GuestUser
+from apps.listings.models import WatchList
 from .serializers import (
+    LoginSerializer,
+    RefreshSerializer,
     RegisterSerializer,
     ResendOtpSerializer,
     SetNewPasswordSerializer,
@@ -12,6 +19,7 @@ from drf_spectacular.utils import extend_schema
 from apps.common.responses import CustomResponse
 
 from apps.common.exceptions import RequestError
+from asgiref.sync import sync_to_async
 
 
 class RegisterView(APIView):
@@ -166,105 +174,104 @@ class SetNewPasswordView(APIView):
         return CustomResponse.success(message="Password reset successful")
 
 
-# class LoginView(Controller):
-#     path = "/login"
+class LoginView(APIView):
+    serializer_class = LoginSerializer
 
-#     @post(
-#         summary="Login a user",
-#         description="This endpoint generates new access and refresh tokens for authentication",
-#     )
-#     async def login(
-#         self,
-#         data: LoginUserSchema,
-#         client: Optional[Union["User", "GuestUser"]],
-#         db: AsyncSession,
-#     ) -> TokensResponseSchema:
-#         email = data.email
-#         plain_password = data.password
-#         user = await user_manager.get_by_email(db, email)
-#         if not user or verify_password(plain_password, user.password) == False:
-#             raise RequestError(err_msg="Invalid credentials", status_code=401)
+    @extend_schema(
+        summary="Login a user",
+        description="This endpoint generates new access and refresh tokens for authentication",
+    )
+    async def post(self, request):
+        serializer = self.serializer_class(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        data = serializer.validated_data
 
-#         if not user.is_email_verified:
-#             raise RequestError(err_msg="Verify your email first", status_code=401)
-#         await jwt_manager.delete_by_user_id(db, user.id)
+        email = data["email"]
+        password = data["password"]
 
-#         # Create tokens and store in jwt model
-#         access = await Authentication.create_access_token({"user_id": str(user.id)})
-#         refresh = await Authentication.create_refresh_token()
-#         await jwt_manager.create(
-#             db, {"user_id": user.id, "access": access, "refresh": refresh}
-#         )
+        user = await User.objects.get_or_none(email=email)
+        if not user or not user.check_password(password):
+            raise RequestError(err_msg="Invalid credentials", status_code=401)
 
-#         # Move all guest user watchlists to the authenticated user watchlists
-#         guest_user_watchlists = await watchlist_manager.get_by_session_key(
-#             db, client.id if client else None, user.id
-#         )
-#         if len(guest_user_watchlists) > 0:
-#             data_to_create = [
-#                 {"user_id": user.id, "listing_id": listing_id}.copy()
-#                 for listing_id in guest_user_watchlists
-#             ]
-#             await watchlist_manager.bulk_create(db, data_to_create)
+        if not user.is_email_verified:
+            raise RequestError(err_msg="Verify your email first", status_code=401)
+        await Jwt.objects.filter(user_id=user.id).adelete()
 
-#         if isinstance(client, GuestUser):
-#             # Delete client (Almost like clearing sessions)
-#             await guestuser_manager.delete(db, client)
+        # Create tokens and store in jwt model
+        access = await Authentication.create_access_token({"user_id": str(user.id)})
+        refresh = await Authentication.create_refresh_token()
+        await Jwt.objects.acreate(user_id=user.id, access=access, refresh=refresh)
 
-#         return TokensResponseSchema(
-#             message="Login successful", data={"access": access, "refresh": refresh}
-#         )
+        # Move all guest user watchlists to the authenticated user watchlists
+        guest_id = is_uuid(request.headers.get("Guestuserid"))
+        if guest_id:
+            guest_user_watchlists_ids = await sync_to_async(list)(
+                WatchList.objects.filter(guest_id=guest_id)
+                .exclude(
+                    listing_id__in=WatchList.objects.filter(user=user).values_list(
+                        "listing_id", flat=True
+                    )
+                )
+                .select_related("user", "listing")
+                .values_list("listing_id", flat=True)
+            )
+            if len(guest_user_watchlists_ids) > 0:
+                data_to_create = [
+                    WatchList(user_id=user.id, listing_id=listing_id)
+                    for listing_id in guest_user_watchlists_ids
+                ]
+                await WatchList.objects.abulk_create(data_to_create)
+                await GuestUser.objects.filter(id=guest_id).adelete()
 
-
-# class RefreshTokensView(Controller):
-#     path = "/refresh"
-
-#     @post(
-#         summary="Refresh tokens",
-#         description="This endpoint refresh tokens by generating new access and refresh tokens for a user",
-#     )
-#     async def refresh(
-#         self, data: RefreshTokensSchema, db: AsyncSession
-#     ) -> TokensResponseSchema:
-#         token = data.refresh
-#         jwt = await jwt_manager.get_by_refresh(db, token)
-#         if not jwt:
-#             raise RequestError(err_msg="Refresh token does not exist", status_code=404)
-#         if not await Authentication.decode_jwt(token):
-#             raise RequestError(
-#                 err_msg="Refresh token is invalid or expired", status_code=401
-#             )
-
-#         access = await Authentication.create_access_token({"user_id": str(jwt.user_id)})
-#         refresh = await Authentication.create_refresh_token()
-
-#         await jwt_manager.update(db, jwt, {"access": access, "refresh": refresh})
-
-#         return TokensResponseSchema(
-#             message="Tokens refresh successful",
-#             data={"access": access, "refresh": refresh},
-#         )
+        return CustomResponse.success(
+            message="Login successful",
+            data={"access": access, "refresh": refresh},
+            status_code=201,
+        )
 
 
-# class LogoutView(Controller):
-#     path = "/logout"
+class RefreshTokensView(APIView):
+    serializer_class = RefreshSerializer
 
-#     @get(
-#         summary="Logout a user",
-#         description="This endpoint logs a user out from our application",
-#     )
-#     async def logout(self, user: User, db: AsyncSession) -> ResponseSchema:
-#         await jwt_manager.delete_by_user_id(db, user.id)
-#         return ResponseSchema(message="Logout successful")
+    @extend_schema(
+        summary="Refresh tokens",
+        description="This endpoint refresh tokens by generating new access and refresh tokens for a user",
+    )
+    async def post(self, request):
+        serializer = self.serializer_class(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        data = serializer.validated_data
+
+        token = data["refresh"]
+        jwt = await Jwt.objects.get_or_none(refresh=token)
+
+        if not jwt:
+            raise RequestError(err_msg="Refresh token does not exist", status_code=404)
+        if not Authentication.decode_jwt(token):
+            raise RequestError(
+                err_msg="Refresh token is invalid or expired", status_code=401
+            )
+
+        access = await Authentication.create_access_token({"user_id": str(jwt.user_id)})
+        refresh = await Authentication.create_refresh_token()
+
+        jwt.access = access
+        jwt.refresh = refresh
+        await jwt.asave()
+
+        return CustomResponse.success(
+            message="Tokens refresh successful",
+            data={"access": access, "refresh": refresh},
+        )
 
 
-# auth_handlers = [
-#     RegisterView,
-#     VerifyEmailView,
-#     ResendVerificationEmailView,
-#     SendPasswordResetOtpView,
-#     SetNewPasswordView,
-#     LoginView,
-#     RefreshTokensView,
-#     LogoutView,
-# ]
+class LogoutView(APIView):
+    permission_classes = (IsAuthenticatedCustom,)
+
+    @extend_schema(
+        summary="Logout a user",
+        description="This endpoint logs a user out from our application",
+    )
+    async def get(self, request):
+        await Jwt.objects.filter(user_id=request.user.id).adelete()
+        return CustomResponse.success(message="Logout successful")

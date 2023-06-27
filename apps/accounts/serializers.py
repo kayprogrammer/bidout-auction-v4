@@ -48,3 +48,12 @@ class SetNewPasswordSerializer(serializers.Serializer):
     password = serializers.CharField(
         min_length=8, error_messages={"min_length": _("{min_length} characters max.")}
     )
+
+
+class LoginSerializer(serializers.Serializer):
+    email = serializers.EmailField()
+    password = serializers.CharField()
+
+
+class RefreshSerializer(serializers.Serializer):
+    refresh = serializers.CharField()
