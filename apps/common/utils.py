@@ -1,3 +1,4 @@
+from django.utils import timezone
 from rest_framework.permissions import BasePermission
 from apps.accounts.auth import Authentication
 from apps.accounts.models import User, Jwt
@@ -5,7 +6,7 @@ from apps.listings.models import Category, Listing
 from apps.common.models import File
 from apps.common.exceptions import RequestError
 
-from datetime import datetime, timedelta
+from datetime import timedelta
 from uuid import UUID
 
 
@@ -94,7 +95,7 @@ class TestUtil:
             "desc": "New description",
             "category_id": category.id,
             "price": 1000.00,
-            "closing_date": datetime.now() + timedelta(days=1),
+            "closing_date": timezone.now() + timedelta(days=1),
             "image_id": file.id,
         }
         listing = await Listing.objects.acreate(**listing_dict)

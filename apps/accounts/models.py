@@ -3,10 +3,9 @@ import uuid
 from django.contrib.auth.models import AbstractBaseUser, PermissionsMixin
 from django.db import models
 from django.utils.translation import gettext_lazy as _
+from django.utils import timezone
 from apps.common.models import BaseModel, File
-from datetime import datetime
 from django.conf import settings
-from apps.common.fields import DateTimeWithoutTZField as DateTimeField
 from apps.common.file_processors import FileProcessor
 from .managers import CustomUserManager
 
@@ -24,8 +23,8 @@ class User(AbstractBaseUser, PermissionsMixin):
     is_email_verified = models.BooleanField(default=False)
     is_staff = models.BooleanField(default=False)
     is_active = models.BooleanField(default=True)
-    created_at = DateTimeField(auto_now_add=True)
-    updated_at = DateTimeField(auto_now=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
 
     USERNAME_FIELD = "email"
     REQUIRED_FIELDS = ["first_name", "last_name"]
@@ -66,7 +65,7 @@ class Otp(BaseModel):
     code = models.IntegerField()
 
     def check_expiration(self):
-        now = datetime.utcnow()
+        now = timezone.now()
         diff = now - self.updated_at
         if diff.total_seconds() > int(settings.EMAIL_OTP_EXPIRE_SECONDS):
             return True

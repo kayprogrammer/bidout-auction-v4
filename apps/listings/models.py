@@ -4,7 +4,6 @@ from apps.accounts.models import User
 from apps.common.models import BaseModel, File, GuestUser
 from datetime import datetime
 from autoslug import AutoSlugField
-from apps.common.fields import DateTimeWithoutTZField as DateTimeField
 from apps.common.file_processors import FileProcessor
 
 
@@ -34,7 +33,7 @@ class Listing(BaseModel):
     price = models.DecimalField(max_digits=10, decimal_places=2)
     highest_bid = models.DecimalField(max_digits=10, decimal_places=2, default=0.00)
     bids_count = models.IntegerField(default=0)
-    closing_date = DateTimeField(null=True)
+    closing_date = models.DateTimeField(null=True)
     active = models.BooleanField(default=True)
 
     image = models.ForeignKey(File, on_delete=models.SET_NULL, null=True)
