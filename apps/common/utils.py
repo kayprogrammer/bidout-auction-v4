@@ -70,23 +70,19 @@ class TestUtil:
         user.save()
         return user
 
-    async def authorized_client(verified_user, client):
-        access = await Authentication.create_access_token(
-            {"user_id": str(verified_user.id)}
-        )
-        refresh = await Authentication.create_refresh_token()
-        await Jwt.objects.acreate(
-            user_id=verified_user.id, access=access, refresh=refresh
-        )
+    def authorized_client(verified_user, client):
+        access = Authentication.create_access_token({"user_id": str(verified_user.id)})
+        refresh = Authentication.create_refresh_token()
+        Jwt.objects.create(user_id=verified_user.id, access=access, refresh=refresh)
         client.headers = {**client.headers, "Authorization": f"Bearer {access}"}
         return client
 
-    async def create_listing(verified_user):
+    def create_listing(verified_user):
         # Create Category
-        category = await Category.objects.acreate(name="TestCategory")
+        category = Category.objects.create(name="TestCategory")
 
         # Create File
-        file = await File.objects.acreate(resource_type="image/jpeg")
+        file = File.objects.create(resource_type="image/jpeg")
 
         # Create Listing
         listing_dict = {
@@ -98,5 +94,5 @@ class TestUtil:
             "closing_date": timezone.now() + timedelta(days=1),
             "image_id": file.id,
         }
-        listing = await Listing.objects.acreate(**listing_dict)
+        listing = Listing.objects.create(**listing_dict)
         return {"user": verified_user, "listing": listing, "category": category}

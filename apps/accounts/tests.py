@@ -1,5 +1,6 @@
 from rest_framework.test import APITestCase
-from apps.accounts.models import Otp
+from apps.accounts.auth import Authentication
+from apps.accounts.models import Jwt, Otp
 
 from apps.common.utils import TestUtil
 from unittest import mock
@@ -117,4 +118,87 @@ class TestAccounts(APITestCase):
         self.assertEqual(response.status_code, 404)
         self.assertEqual(
             response.json(), {"status": "failure", "message": "Incorrect Email"}
+        )
+
+    def test_login(self):
+        new_user = self.new_user
+
+        # Test for invalid credentials
+        response = self.client.post(
+            self.login_url,
+            {"email": "invalid@email.com", "password": "invalidpassword"},
+        )
+        self.assertEqual(response.status_code, 401)
+        self.assertEqual(
+            response.json(), {"status": "failure", "message": "Invalid credentials"}
+        )
+
+        # Test for unverified credentials (email)
+        response = self.client.post(
+            self.login_url,
+            {"email": new_user.email, "password": "testpassword"},
+        )
+        self.assertEqual(response.status_code, 401)
+        self.assertEqual(
+            response.json(), {"status": "failure", "message": "Verify your email first"}
+        )
+
+        # Test for valid credentials and verified email address
+        new_user.is_email_verified = True
+        new_user.save()
+        response = self.client.post(
+            self.login_url,
+            {"email": new_user.email, "password": "testpassword"},
+        )
+        self.assertEqual(response.status_code, 201)
+        self.assertEqual(
+            response.json(),
+            {
+                "status": "success",
+                "message": "Login successful",
+                "data": {"access": mock.ANY, "refresh": mock.ANY},
+            },
+        )
+
+    def test_refresh_token(self):
+        verified_user = self.verified_user
+
+        jwt_obj = Jwt.objects.create(
+            user_id=verified_user.id,
+            access="access",
+            refresh="refresh",
+        )
+
+        # Test for invalid refresh token (not found)
+        response = self.client.post(
+            self.refresh_url, {"refresh": "invalid_refresh_token"}
+        )
+        self.assertEqual(response.status_code, 404)
+        self.assertEqual(
+            response.json(),
+            {"status": "failure", "message": "Refresh token does not exist"},
+        )
+
+        # Test for invalid refresh token (invalid or expired)
+        response = self.client.post(self.refresh_url, {"refresh": jwt_obj.refresh})
+        self.assertEqual(response.status_code, 401)
+        self.assertEqual(
+            response.json(),
+            {"status": "failure", "message": "Refresh token is invalid or expired"},
+        )
+
+        # Test for valid refresh token
+        refresh = Authentication.create_refresh_token()
+        jwt_obj.refresh = refresh
+        jwt_obj.save()
+        mock.patch("apps.accounts.auth.Authentication.decode_jwt", return_value=True)
+        response = self.client.post(self.refresh_url, {"refresh": jwt_obj.refresh})
+        self.assertEqual(response.status_code, 201)
+        self.assertEqual(
+            response.json(),
+            {
+                "status": "success",
+                "message": "Tokens refresh successful",
+                "data": {"access": mock.ANY, "refresh": mock.ANY},
+            },
         )

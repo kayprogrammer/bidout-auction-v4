@@ -12,7 +12,7 @@ class Authentication:
         return "".join(random.choices(string.ascii_letters + string.digits, k=length))
 
     # generate access token based and encode user's id
-    async def create_access_token(payload: dict):
+    def create_access_token(payload: dict):
         expire = datetime.utcnow() + timedelta(
             minutes=int(settings.ACCESS_TOKEN_EXPIRE_MINUTES)
         )
@@ -21,7 +21,7 @@ class Authentication:
         return encoded_jwt
 
     # generate random refresh token
-    async def create_refresh_token(
+    def create_refresh_token(
         expire=datetime.utcnow()
         + timedelta(minutes=int(settings.REFRESH_TOKEN_EXPIRE_MINUTES)),
     ):

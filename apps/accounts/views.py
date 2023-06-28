@@ -198,8 +198,8 @@ class LoginView(APIView):
         await Jwt.objects.filter(user_id=user.id).adelete()
 
         # Create tokens and store in jwt model
-        access = await Authentication.create_access_token({"user_id": str(user.id)})
-        refresh = await Authentication.create_refresh_token()
+        access = Authentication.create_access_token({"user_id": str(user.id)})
+        refresh = Authentication.create_refresh_token()
         await Jwt.objects.acreate(user_id=user.id, access=access, refresh=refresh)
 
         # Move all guest user watchlists to the authenticated user watchlists
@@ -252,8 +252,8 @@ class RefreshTokensView(APIView):
                 err_msg="Refresh token is invalid or expired", status_code=401
             )
 
-        access = await Authentication.create_access_token({"user_id": str(jwt.user_id)})
-        refresh = await Authentication.create_refresh_token()
+        access = Authentication.create_access_token({"user_id": str(jwt.user_id)})
+        refresh = Authentication.create_refresh_token()
 
         jwt.access = access
         jwt.refresh = refresh
@@ -262,6 +262,7 @@ class RefreshTokensView(APIView):
         return CustomResponse.success(
             message="Tokens refresh successful",
             data={"access": access, "refresh": refresh},
+            status_code=201,
         )
 
 
