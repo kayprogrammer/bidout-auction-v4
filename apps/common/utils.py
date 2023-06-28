@@ -1,4 +1,3 @@
-from django.conf import settings
 from rest_framework.permissions import BasePermission
 from apps.accounts.auth import Authentication
 from apps.accounts.models import User, Jwt

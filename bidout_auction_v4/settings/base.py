@@ -104,7 +104,7 @@ SPECTACULAR_SETTINGS = {
             "guestUserID": [],
         }
     ],
-    "DESCRIPTION": "A Simple Bidding API",
+    "DESCRIPTION": "A Simple Bidding API built with Django Rest Framework",
     "VERSION": "4.0.0",
     "SERVE_INCLUDE_SCHEMA": False,
     "SCHEMA_PATH_PREFIX": r"/api/v[0-9]",
