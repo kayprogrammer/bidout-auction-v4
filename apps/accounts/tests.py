@@ -18,7 +18,8 @@ class TestAccounts(APITestCase):
 
     def setUp(self):
         self.new_user = TestUtil.new_user()
-        self.verified_user = TestUtil.verified_user()
+        verified_user = TestUtil.verified_user()
+        self.verified_user = verified_user
 
     def test_register(self):
         email = "testregisteruser@example.com"
@@ -201,4 +202,102 @@ class TestAccounts(APITestCase):
                 "message": "Tokens refresh successful",
                 "data": {"access": mock.ANY, "refresh": mock.ANY},
             },
+        )
+
+    def test_get_password_otp(self):
+        verified_user = self.verified_user
+        email = verified_user.email
+
+        password = "testverifieduser123"
+        user_dict = {"email": email, "password": password}
+
+        mock.patch("apps.accounts.emails.Util", new="")
+        # Then, attempt to get password reset token
+        response = self.client.post(self.send_password_reset_otp_url, user_dict)
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(
+            response.json(),
+            {"status": "success", "message": "Password otp sent"},
+        )
+
+        # Verify that an error is raised when attempting to get password reset token for a user that doesn't exist
+        mock.patch("apps.accounts.emails.Util", new="")
+        response = self.client.post(
+            self.send_password_reset_otp_url,
+            {"email": "invalid@example.com"},
+        )
+        self.assertEqual(response.status_code, 404)
+        self.assertEqual(
+            response.json(),
+            {"status": "failure", "message": "Incorrect Email"},
+        )
+
+    def test_reset_password(self):
+        verified_user = self.verified_user
+        password_reset_data = {
+            "email": verified_user.email,
+            "password": "newtestverifieduserpassword123",
+        }
+        otp = "111111"
+
+        # Verify that the password reset verification fails with an incorrect email
+        response = self.client.post(
+            self.set_new_password_url,
+            {
+                "email": "invalidemail@example.com",
+                "otp": otp,
+                "password": "newpassword",
+            },
+        )
+        self.assertEqual(response.status_code, 404)
+        self.assertEqual(
+            response.json(),
+            {"status": "failure", "message": "Incorrect Email"},
+        )
+
+        # Verify that the password reset verification fails with an invalid otp
+        password_reset_data["otp"] = otp
+        response = self.client.post(
+            self.set_new_password_url,
+            password_reset_data,
+        )
+        self.assertEqual(response.status_code, 404)
+        self.assertEqual(
+            response.json(),
+            {"status": "failure", "message": "Incorrect Otp"},
+        )
+
+        # Verify that password reset succeeds
+        Otp.objects.create(user_id=verified_user.id, code=otp)
+        password_reset_data["otp"] = otp
+        mock.patch("apps.accounts.emails.Util", new="")
+        response = self.client.post(
+            self.set_new_password_url,
+            password_reset_data,
+        )
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(
+            response.json(),
+            {"status": "success", "message": "Password reset successful"},
+        )
+
+    def test_logout(self):
+        auth_token = TestUtil.auth_token(self.verified_user)
+
+        # Ensures if authorized user logs out successfully
+        self.bearer = {"HTTP_AUTHORIZATION": f"Bearer {auth_token}"}
+        response = self.client.get(self.logout_url, **self.bearer)
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(
+            response.json(),
+            {"status": "success", "message": "Logout successful"},
+        )
+
+        # Ensures if unauthorized user cannot log out
+        self.bearer = {"HTTP_AUTHORIZATION": f"invalid_token"}
+        response = self.client.get(self.logout_url, **self.bearer)
+        self.assertEqual(response.status_code, 401)
+        self.assertEqual(
+            response.json(),
+            {"status": "failure", "message": "Auth Token is Invalid or Expired!"},
         )

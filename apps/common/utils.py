@@ -18,7 +18,7 @@ class IsAuthenticatedCustom(BasePermission):
         user = Authentication.decodeAuthorization(http_auth)
         if not user:
             raise RequestError(
-                err_msg="Auth token invalid or expired!", status_code=401
+                err_msg="Auth Token is Invalid or Expired!", status_code=401
             )
         request.user = user
         if request.user and request.user.is_authenticated:
@@ -70,12 +70,11 @@ class TestUtil:
         user.save()
         return user
 
-    def authorized_client(verified_user, client):
+    def auth_token(verified_user):
         access = Authentication.create_access_token({"user_id": str(verified_user.id)})
         refresh = Authentication.create_refresh_token()
         Jwt.objects.create(user_id=verified_user.id, access=access, refresh=refresh)
-        client.headers = {**client.headers, "Authorization": f"Bearer {access}"}
-        return client
+        return access
 
     def create_listing(verified_user):
         # Create Category
