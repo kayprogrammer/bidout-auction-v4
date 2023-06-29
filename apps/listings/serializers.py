@@ -1,6 +1,5 @@
 from typing import Optional
 from rest_framework import serializers
-
 from apps.listings.models import WatchList
 
 
@@ -32,18 +31,24 @@ class ListingSerializer(serializers.Serializer):
 
     def get_watchlist(self, obj) -> bool:
         request = self.context["request"]
-        guest_id = request.headers.get("Guestuserid")
-
+        user = request.user
         watchlist = []
-        if request.user.is_authenticated:
-            watchlist = WatchList.objects.filter(
-                listing_id=obj.id, user_id=request.user.id
-            )
-        elif guest_id:
-            watchlist = WatchList.objects.filter(listing_id=obj.id, guest_id=guest_id)
+        if user:
+            if hasattr(user, "email"):
+                watchlist = WatchList.objects.filter(
+                    listing_id=obj.id, user_id=user.id
+                ).select_related("listing", "user", "guest")
+            else:
+                watchlist = WatchList.objects.filter(
+                    listing_id=obj.id, guest_id=user.id
+                ).select_related("listing", "user", "guest")
         return True if len(watchlist) > 0 else False
 
 
 class ListingDetailSerializer(serializers.Serializer):
     listing = ListingSerializer()
     related_listings = ListingSerializer(many=True)
+
+
+class WatchlistCreateSerializer(serializers.Serializer):
+    slug = serializers.SlugField()

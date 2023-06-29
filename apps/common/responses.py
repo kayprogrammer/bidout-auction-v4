@@ -8,7 +8,7 @@ class CustomResponse:
             "message": message,
             "data": data,
         }
-        response.pop("data", None) if not data else ...
+        response.pop("data", None) if data is None else ...
         return Response(data=response, status=status_code)
 
     def error(message, data=None, status_code=400):
@@ -17,5 +17,5 @@ class CustomResponse:
             "message": message,
             "data": data,
         }
-        response.pop("data", None) if not data else ...
+        response.pop("data", None) if data is None else ...
         return Response(data=response, status=status_code)
