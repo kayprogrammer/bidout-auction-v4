@@ -1,8 +1,8 @@
 from django.db import models
 from django.core.exceptions import ValidationError
+from django.utils import timezone
 from apps.accounts.models import User
 from apps.common.models import BaseModel, File, GuestUser
-from datetime import datetime
 from autoslug import AutoSlugField
 from apps.common.file_processors import FileProcessor
 
@@ -43,7 +43,7 @@ class Listing(BaseModel):
 
     @property
     def time_left_seconds(self):
-        remaining_time = self.closing_date - datetime.utcnow()
+        remaining_time = self.closing_date - timezone.now()
         remaining_seconds = remaining_time.total_seconds()
         return remaining_seconds
 
