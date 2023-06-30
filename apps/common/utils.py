@@ -119,7 +119,7 @@ class TestUtil:
             "auctioneer_id": verified_user.id,
             "name": "New Listing",
             "desc": "New description",
-            "category_id": category.id,
+            "category": category,
             "price": 1000.00,
             "closing_date": timezone.now() + timedelta(days=1),
             "image_id": file.id,

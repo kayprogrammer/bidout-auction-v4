@@ -1,10 +1,5 @@
-from django.db.models import Q
 from typing import Optional
 from rest_framework import serializers
-
-from asgiref.sync import sync_to_async
-
-from apps.listings.models import WatchList
 
 
 class ListingSerializer(serializers.Serializer):

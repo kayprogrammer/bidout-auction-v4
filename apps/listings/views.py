@@ -262,14 +262,19 @@ class BidsView(APIView):
             await Listing.objects.select_related(
                 "auctioneer", "auctioneer__avatar", "category", "image"
             )
-            .prefetch_related("bids")
+            .prefetch_related(
+                Prefetch(
+                    "bids",
+                    queryset=Bid.objects.select_related("user", "user__avatar"),
+                    to_attr="all_bids",
+                )
+            )
             .get_or_none(slug=kwargs.get("slug"))
         )
         if not listing:
             raise RequestError(err_msg="Listing does not exist!", status_code=404)
 
-        bids = listing.bids.all()[:3]
-
+        bids = listing.all_bids[:3]
         serializer = self.serializer_class({"listing": listing.name, "bids": bids})
         return CustomResponse.success(
             message="Listing Bids fetched", data=serializer.data
@@ -331,7 +336,7 @@ class BidsView(APIView):
         await listing.asave()
         serializer = BidDataSerializer(bid)
         return CustomResponse.success(
-            message="Bid added to listing", data=serializer.data
+            message="Bid added to listing", data=serializer.data, status_code=201
         )
 
     def get_permissions(self):
