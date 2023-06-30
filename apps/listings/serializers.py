@@ -5,17 +5,20 @@ from rest_framework import serializers
 class ListingSerializer(serializers.Serializer):
     auctioneer = serializers.SerializerMethodField()
     name = serializers.CharField()
-    slug = serializers.SlugField()
+    slug = serializers.SlugField(read_only=True)
     desc = serializers.CharField()
     category = serializers.CharField()
     price = serializers.DecimalField(max_digits=10, decimal_places=2)
     closing_date = serializers.DateTimeField()
-    active = serializers.BooleanField()
-    bids_count = serializers.IntegerField()
-    highest_bid = serializers.DecimalField(max_digits=10, decimal_places=2)
-    time_left_seconds = serializers.IntegerField()
-    image = serializers.SerializerMethodField()
-    watchlist = serializers.SerializerMethodField()
+    active = serializers.BooleanField(read_only=True)
+    bids_count = serializers.IntegerField(read_only=True)
+    highest_bid = serializers.DecimalField(
+        max_digits=10, decimal_places=2, read_only=True
+    )
+    time_left_seconds = serializers.IntegerField(read_only=True)
+    image = serializers.SerializerMethodField(read_only=True)
+    watchlist = serializers.SerializerMethodField(read_only=True)
+    file_type = serializers.CharField(write_only=True)
 
     def get_auctioneer(self, obj) -> dict:
         auctioneer = obj.auctioneer

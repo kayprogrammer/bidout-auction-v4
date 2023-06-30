@@ -19,7 +19,7 @@ urlpatterns = [
     path("api/v4/auth/", include("apps.accounts.urls")),
     path("api/v4/general/", include("apps.general.urls")),
     path("api/v4/listings/", include("apps.listings.urls")),
-    # path("api/v4/auctioneer/", include("apps.auctioneer.urls")),
+    path("api/v4/auctioneer/", include("apps.auctioneer.urls")),
     path("__debug__/", include(debug_toolbar.urls)),
 ]
 
