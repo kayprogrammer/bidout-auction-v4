@@ -275,14 +275,10 @@ class BidsView(APIView):
             message="Listing Bids fetched", data=serializer.data
         )
 
-
-class BidCreateView(APIView):
-    serializer_class = BidDataSerializer
-    permission_classes = (IsAuthenticatedCustom,)
-
     @extend_schema(
         summary="Add a bid to a listing",
         description="This endpoint adds a bid to a particular listing.",
+        request=BidDataSerializer,
     )
     async def post(self, request, *args, **kwargs):
         user = request.user
@@ -297,7 +293,7 @@ class BidCreateView(APIView):
         if not listing:
             raise RequestError(err_msg="Listing does not exist!", status_code=404)
 
-        serializer = self.serializer_class(data=request.data)
+        serializer = BidDataSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
         amount = serializer.validated_data["amount"]
 
@@ -333,7 +329,14 @@ class BidCreateView(APIView):
         listing.bids_count = bids_count
         listing.highest_bid = amount
         await listing.asave()
-        serializer = self.serializer_class(bid)
+        serializer = BidDataSerializer(bid)
         return CustomResponse.success(
             message="Bid added to listing", data=serializer.data
         )
+
+    def get_permissions(self):
+        if self.request.method == "POST":
+            return [
+                IsAuthenticatedCustom(),
+            ]
+        return []
