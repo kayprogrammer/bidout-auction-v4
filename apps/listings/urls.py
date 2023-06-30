@@ -10,5 +10,4 @@ urlpatterns = [
     path("<slug:slug>/", views.ListingDetailView.as_view()),
     path("<slug:slug>/bids/", views.BidCreateView.as_view()),
     path("<slug:slug>/bids/", views.BidsView.as_view()),
-
 ]

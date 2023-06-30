@@ -3,7 +3,11 @@ from adrf.views import APIView
 from apps.common.exceptions import RequestError
 from apps.common.models import GuestUser
 from apps.common.responses import CustomResponse
-from apps.common.utils import IsAuthenticatedCustom, IsGuestOrAuthenticatedCustom, is_int
+from apps.common.utils import (
+    IsAuthenticatedCustom,
+    IsGuestOrAuthenticatedCustom,
+    is_int,
+)
 from .models import Bid, Category, Listing, WatchList
 from .serializers import (
     BidDataSerializer,
@@ -271,9 +275,10 @@ class BidsView(APIView):
             message="Listing Bids fetched", data=serializer.data
         )
 
+
 class BidCreateView(APIView):
     serializer_class = BidDataSerializer
-    permission_classes = (IsAuthenticatedCustom, )
+    permission_classes = (IsAuthenticatedCustom,)
 
     @extend_schema(
         summary="Add a bid to a listing",
@@ -294,7 +299,7 @@ class BidCreateView(APIView):
 
         serializer = self.serializer_class(data=request.data)
         serializer.is_valid(raise_exception=True)
-        amount = serializer.validated_data['amount']
+        amount = serializer.validated_data["amount"]
 
         bids_count = listing.bids_count
         if user.id == listing.auctioneer_id:
@@ -314,7 +319,9 @@ class BidCreateView(APIView):
         elif amount <= listing.highest_bid:
             raise RequestError(err_msg="Bid amount must be more than the highest bid!")
 
-        bid = await Bid.objects.select_related("user", "user__avatar").get_or_none(user_id=user.id, listing_id=listing.id)
+        bid = await Bid.objects.select_related("user", "user__avatar").get_or_none(
+            user_id=user.id, listing_id=listing.id
+        )
         if bid:
             # Update existing bid
             bid.amount = amount
@@ -322,11 +329,11 @@ class BidCreateView(APIView):
         else:
             # Create new bid
             bids_count += 1
-            bid = await Bid.objects.acreate(user_id=user.id, listing_id=listing.id, amount=amount)
-
+            bid = await Bid.objects.acreate(user=user, listing=listing, amount=amount)
         listing.bids_count = bids_count
         listing.highest_bid = amount
         await listing.asave()
-        print('haa')
         serializer = self.serializer_class(bid)
-        return CustomResponse.success(message="Bid added to listing", data=serializer.data)
+        return CustomResponse.success(
+            message="Bid added to listing", data=serializer.data
+        )
