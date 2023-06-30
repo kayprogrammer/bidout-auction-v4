@@ -64,7 +64,6 @@ class Listing(BaseModel):
             )
         return None
 
-
 class Bid(BaseModel):
     user = models.ForeignKey(User, related_name="listings", on_delete=models.CASCADE)
     listing = models.ForeignKey(
@@ -94,8 +93,8 @@ class WatchList(BaseModel):
     user = models.ForeignKey(
         User, related_name="watchlists", on_delete=models.CASCADE, null=True
     )
-    listing = models.ForeignKey(Listing, on_delete=models.CASCADE)
-    guest = models.ForeignKey(GuestUser, on_delete=models.CASCADE, null=True)
+    listing = models.ForeignKey(Listing, related_name="watchlists", on_delete=models.CASCADE)
+    guest = models.ForeignKey(GuestUser, related_name="watchlists", on_delete=models.CASCADE, null=True)
 
     def __str__(self):
         if self.user:

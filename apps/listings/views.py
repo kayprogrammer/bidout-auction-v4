@@ -4,7 +4,7 @@ from apps.common.exceptions import RequestError
 from apps.common.models import GuestUser
 from apps.common.responses import CustomResponse
 from apps.common.utils import IsGuestOrAuthenticatedCustom, is_int
-from .models import Listing, WatchList
+from .models import Category, Listing, WatchList
 from .serializers import (
     ListingDetailSerializer,
     ListingSerializer,
@@ -79,7 +79,7 @@ class ListingDetailView(APIView):
 
 
 class ListingsByWatchListView(APIView):
-    serializer = ListingSerializer
+    serializer_class = ListingSerializer
     permission_classes = (IsGuestOrAuthenticatedCustom,)
 
     @extend_schema(
@@ -87,17 +87,13 @@ class ListingsByWatchListView(APIView):
         description="This endpoint retrieves all listings",
     )
     async def get(self, request):
-        user = request.user
+        client = request.user
         watchlists = []
-        if user:
-            watchlists = await sync_to_async(list)(
-                WatchList.objects.filter(
-                    Q(user_id=user.id) | Q(guest_id=user.id)
-                ).select_related("user", "guest", "listing")
-            )
-
+        if client:
+            watchlists = await sync_to_async(list)(WatchList.objects.filter(Q(user_id=client.id) | Q(guest_id=client.id)).select_related("user", "guest", "listing", "listing__auctioneer", "listing__category", "listing__image"))
+        print(watchlists[0].listing.watchlists)
         serializer_data = [
-            self.serializer_class(watchlist.listing).data for watchlist in watchlists
+            self.serializer_class(watchlist.listing, context={"client": client}).data for watchlist in watchlists
         ]
         return CustomResponse.success(
             message="Watchlist Listings fetched", data=serializer_data
@@ -153,46 +149,37 @@ class ListingsByWatchListView(APIView):
         )
 
 
-# class CategoryListingsView(Controller):
-#     path = "/categories"
+class CategoryListingsView(APIView):
+    @extend_schema(
+        summary="Retrieve all categories",
+        description="This endpoint retrieves all categories",
+    )
+    async def get(self, request):
+        categories = await sync_to_async(list)(Category.objects.values("name", "slug"))
+        return CustomResponse.success(message="Categories fetched", data=categories)
 
-#     @get(
-#         summary="Retrieve all categories",
-#         description="This endpoint retrieves all categories",
-#     )
-#     async def retrieve_categories(self, db: AsyncSession) -> CategoriesResponseSchema:
-#         categories = await category_manager.get_all(db)
-#         return CategoriesResponseSchema(message="Categories fetched", data=categories)
+class CategoryListingsView(APIView):
+    serializer = ListingSerializer
+    permission_classes = (IsGuestOrAuthenticatedCustom,)
 
-#     @get(
-#         "/{slug:str}",
-#         summary="Retrieve all listings by category",
-#         description="This endpoint retrieves all listings in a particular category. Use slug 'other' for category other",
-#     )
-#     async def retrieve_category_listings(
-#         self, slug: str, db: AsyncSession, client: Optional[Union["User", "GuestUser"]]
-#     ) -> ListingsResponseSchema:
-#         # listings with category 'other' have category column as null
-#         category = None
-#         if slug != "other":
-#             category = await category_manager.get_by_slug(db, slug)
-#             if not category:
-#                 raise RequestError(err_msg="Invalid category", status_code=404)
+    @extend_schema(
+        summary="Retrieve all listings by category",
+        description="This endpoint retrieves all listings in a particular category. Use slug 'other' for category other",
+    )
+    async def get(self, request, *args, **kwargs):
+        user = request.user
+        slug = kwargs.get('slug')
 
-#         listings = await listing_manager.get_by_category(db, category)
-#         data = [
-#             ListingDataSchema(
-#                 watchlist=True
-#                 if await watchlist_manager.get_by_client_id_and_listing_id(
-#                     db, client.id if client else None, listing.id
-#                 )
-#                 else False,
-#                 time_left_seconds=listing.time_left_seconds,
-#                 **listing.dict()
-#             )
-#             for listing in listings
-#         ]
-#         return ListingsResponseSchema(message="Category Listings fetched", data=data)
+        # listings with category 'other' have category column as null
+        category = None
+        if slug != "other":
+            category = await Category.objects.get_or_none(slug=slug)
+            if not category:
+                raise RequestError(err_msg="Invalid category", status_code=404)
+
+        listings = await sync_to_async(list)(Listing.objects.filter(category_id=category.id).select_related("auctioneer", "auctioneer__avatar", "category", "image"))
+        serializer = self.serializer_class(listings, many=True)
+        return CustomResponse.success(message="Category Listings fetched", data=serializer.data)
 
 
 # class BidsView(Controller):

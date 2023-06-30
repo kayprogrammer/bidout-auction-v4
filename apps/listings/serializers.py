@@ -1,7 +1,8 @@
+from django.db.models import Q
 from typing import Optional
 from rest_framework import serializers
-from apps.listings.models import WatchList
 
+from apps.listings.models import Listing
 
 class ListingSerializer(serializers.Serializer):
     auctioneer = serializers.SerializerMethodField()
@@ -30,19 +31,11 @@ class ListingSerializer(serializers.Serializer):
         return obj.get_image
 
     def get_watchlist(self, obj) -> bool:
-        request = self.context["request"]
-        user = request.user
-        watchlist = []
-        if user:
-            if hasattr(user, "email"):
-                watchlist = WatchList.objects.filter(
-                    listing_id=obj.id, user_id=user.id
-                ).select_related("listing", "user", "guest")
-            else:
-                watchlist = WatchList.objects.filter(
-                    listing_id=obj.id, guest_id=user.id
-                ).select_related("listing", "user", "guest")
-        return True if len(watchlist) > 0 else False
+        client = self.context["client"]
+        watchlist_status = False
+        if client:
+            watchlist_status = Listing.objects.filter(slug="aaa").first()
+        return watchlist_status
 
 
 class ListingDetailSerializer(serializers.Serializer):
