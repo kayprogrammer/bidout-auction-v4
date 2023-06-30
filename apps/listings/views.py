@@ -3,9 +3,10 @@ from adrf.views import APIView
 from apps.common.exceptions import RequestError
 from apps.common.models import GuestUser
 from apps.common.responses import CustomResponse
-from apps.common.utils import IsGuestOrAuthenticatedCustom, is_int
-from .models import Category, Listing, WatchList
+from apps.common.utils import IsAuthenticatedCustom, IsGuestOrAuthenticatedCustom, is_int
+from .models import Bid, Category, Listing, WatchList
 from .serializers import (
+    BidDataSerializer,
     BidSerializer,
     ListingDetailSerializer,
     ListingSerializer,
@@ -270,50 +271,62 @@ class BidsView(APIView):
             message="Listing Bids fetched", data=serializer.data
         )
 
+class BidCreateView(APIView):
+    serializer_class = BidDataSerializer
+    permission_classes = (IsAuthenticatedCustom, )
 
-#     @post(
-#         summary="Add a bid to a listing",
-#         description="This endpoint adds a bid to a particular listing.",
-#     )
-#     async def post(
-#         self, slug: str, data: CreateBidSchema, db: AsyncSession, user: User
-#     ) -> BidResponseSchema:
-#         listing = await listing_manager.get_by_slug(db, slug)
-#         if not listing:
-#             raise RequestError(err_msg="Listing does not exist!", status_code=404)
+    @extend_schema(
+        summary="Add a bid to a listing",
+        description="This endpoint adds a bid to a particular listing.",
+    )
+    async def post(self, request, *args, **kwargs):
+        user = request.user
 
-#         amount = data.amount
-#         bids_count = listing.bids_count
-#         if user.id == listing.auctioneer_id:
-#             raise RequestError(
-#                 err_msg="You cannot bid your own product!", status_code=403
-#             )
-#         elif not listing.active:
-#             raise RequestError(err_msg="This auction is closed!", status_code=410)
-#         elif listing.time_left < 1:
-#             raise RequestError(
-#                 err_msg="This auction is expired and closed!", status_code=410
-#             )
-#         elif amount < listing.price:
-#             raise RequestError(
-#                 err_msg="Bid amount cannot be less than the bidding price!"
-#             )
-#         elif amount <= listing.highest_bid:
-#             raise RequestError(err_msg="Bid amount must be more than the highest bid!")
+        listing = (
+            await Listing.objects.select_related(
+                "auctioneer", "auctioneer__avatar", "category", "image"
+            )
+            .prefetch_related("bids")
+            .get_or_none(slug=kwargs.get("slug"))
+        )
+        if not listing:
+            raise RequestError(err_msg="Listing does not exist!", status_code=404)
 
-#         bid = await bid_manager.get_by_user_and_listing_id(db, user.id, listing.id)
-#         if bid:
-#             # Update existing bid
-#             bid = await bid_manager.update(db, bid, {"amount": amount})
-#         else:
-#             # Create new bid
-#             bids_count += 1
-#             bid = await bid_manager.create(
-#                 db,
-#                 {"user_id": user.id, "listing_id": listing.id, "amount": amount},
-#             )
+        serializer = self.serializer_class(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        amount = serializer.validated_data['amount']
 
-#         await listing_manager.update(
-#             db, listing, {"highest_bid": amount, "bids_count": bids_count}
-#         )
-#         return BidResponseSchema(message="Bid added to listing", data=bid)
+        bids_count = listing.bids_count
+        if user.id == listing.auctioneer_id:
+            raise RequestError(
+                err_msg="You cannot bid your own product!", status_code=403
+            )
+        elif not listing.active:
+            raise RequestError(err_msg="This auction is closed!", status_code=410)
+        elif listing.time_left < 1:
+            raise RequestError(
+                err_msg="This auction is expired and closed!", status_code=410
+            )
+        elif amount < listing.price:
+            raise RequestError(
+                err_msg="Bid amount cannot be less than the bidding price!"
+            )
+        elif amount <= listing.highest_bid:
+            raise RequestError(err_msg="Bid amount must be more than the highest bid!")
+
+        bid = await Bid.objects.select_related("user", "user__avatar").get_or_none(user_id=user.id, listing_id=listing.id)
+        if bid:
+            # Update existing bid
+            bid.amount = amount
+            await bid.asave()
+        else:
+            # Create new bid
+            bids_count += 1
+            bid = await Bid.objects.acreate(user_id=user.id, listing_id=listing.id, amount=amount)
+
+        listing.bids_count = bids_count
+        listing.highest_bid = amount
+        await listing.asave()
+        print('haa')
+        serializer = self.serializer_class(bid)
+        return CustomResponse.success(message="Bid added to listing", data=serializer.data)
