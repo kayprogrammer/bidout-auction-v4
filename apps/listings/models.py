@@ -64,11 +64,10 @@ class Listing(BaseModel):
             )
         return None
 
+
 class Bid(BaseModel):
-    user = models.ForeignKey(User, related_name="listings", on_delete=models.CASCADE)
-    listing = models.ForeignKey(
-        Listing, related_name="listings", on_delete=models.CASCADE
-    )
+    user = models.ForeignKey(User, related_name="bids", on_delete=models.CASCADE)
+    listing = models.ForeignKey(Listing, related_name="bids", on_delete=models.CASCADE)
 
     amount = models.DecimalField(max_digits=10, decimal_places=2)
 
@@ -93,8 +92,12 @@ class WatchList(BaseModel):
     user = models.ForeignKey(
         User, related_name="watchlists", on_delete=models.CASCADE, null=True
     )
-    listing = models.ForeignKey(Listing, related_name="watchlists", on_delete=models.CASCADE)
-    guest = models.ForeignKey(GuestUser, related_name="watchlists", on_delete=models.CASCADE, null=True)
+    listing = models.ForeignKey(
+        Listing, related_name="watchlists", on_delete=models.CASCADE
+    )
+    guest = models.ForeignKey(
+        GuestUser, related_name="watchlists", on_delete=models.CASCADE, null=True
+    )
 
     def __str__(self):
         if self.user:

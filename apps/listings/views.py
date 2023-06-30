@@ -1,4 +1,4 @@
-from django.db.models import Q
+from django.db.models import Prefetch, Q
 from adrf.views import APIView
 from apps.common.exceptions import RequestError
 from apps.common.models import GuestUser
@@ -31,10 +31,19 @@ class ListingsView(APIView):
         ],
     )
     async def get(self, request):
-
+        client = request.user
         listings = await sync_to_async(list)(
             Listing.objects.select_related(
                 "auctioneer", "auctioneer__avatar", "category", "image"
+            ).prefetch_related(
+                Prefetch(
+                    "watchlists",
+                    queryset=WatchList.objects.filter(
+                        Q(user_id=client.id if client else None)
+                        | Q(guest_id=client.id if client else None)
+                    ),
+                    to_attr="watchlist",
+                )
             )
         )
         quantity = is_int(request.GET.get("quantity"))
@@ -42,7 +51,7 @@ class ListingsView(APIView):
             # Retrieve based on amount
             listings = listings[:quantity]
         serializer = self.serializer_class(
-            listings, many=True, context={"request": request}
+            listings, many=True, context={"client": client}
         )
         return CustomResponse.success(message="Listings fetched", data=serializer.data)
 
@@ -56,9 +65,22 @@ class ListingDetailView(APIView):
         description="This endpoint retrieves detail of a listing",
     )
     async def get(self, request, *args, **kwargs):
-        listing = await Listing.objects.select_related(
-            "auctioneer", "auctioneer__avatar", "category", "image"
-        ).get_or_none(slug=kwargs.get("slug"))
+        client = request.user
+        prefetch_query = Prefetch(
+            "watchlists",
+            queryset=WatchList.objects.filter(
+                Q(user_id=client.id if client else None)
+                | Q(guest_id=client.id if client else None)
+            ),
+            to_attr="watchlist",
+        )
+        listing = (
+            await Listing.objects.select_related(
+                "auctioneer", "auctioneer__avatar", "category", "image"
+            )
+            .prefetch_related(prefetch_query)
+            .get_or_none(slug=kwargs.get("slug"))
+        )
         if not listing:
             raise RequestError(err_msg="Listing does not exist!", status_code=404)
 
@@ -67,11 +89,13 @@ class ListingDetailView(APIView):
                 Listing.objects.filter(category_id=listing.category_id)
                 .exclude(id=listing.id)
                 .select_related("auctioneer", "auctioneer__avatar", "category", "image")
+                .prefetch_related(prefetch_query)
             )
         )[:3]
+
         serializer = self.serializer_class(
             {"listing": listing, "related_listings": related_listings},
-            context={"request": request},
+            context={"client": client},
         )
         return CustomResponse.success(
             message="Listing details fetched", data=serializer.data
@@ -90,10 +114,30 @@ class ListingsByWatchListView(APIView):
         client = request.user
         watchlists = []
         if client:
-            watchlists = await sync_to_async(list)(WatchList.objects.filter(Q(user_id=client.id) | Q(guest_id=client.id)).select_related("user", "guest", "listing", "listing__auctioneer", "listing__category", "listing__image"))
-        print(watchlists[0].listing.watchlists)
+            watchlists = await sync_to_async(list)(
+                WatchList.objects.filter(Q(user_id=client.id) | Q(guest_id=client.id))
+                .select_related(
+                    "user",
+                    "guest",
+                    "listing",
+                    "listing__auctioneer",
+                    "listing__category",
+                    "listing__image",
+                )
+                .prefetch_related(
+                    Prefetch(
+                        "listing__watchlists",
+                        queryset=WatchList.objects.filter(
+                            Q(user_id=client.id if client else None)
+                            | Q(guest_id=client.id if client else None)
+                        ),
+                        to_attr="watchlist",
+                    )
+                )
+            )
         serializer_data = [
-            self.serializer_class(watchlist.listing, context={"client": client}).data for watchlist in watchlists
+            self.serializer_class(watchlist.listing, context={"client": client}).data
+            for watchlist in watchlists
         ]
         return CustomResponse.success(
             message="Watchlist Listings fetched", data=serializer_data
@@ -149,7 +193,7 @@ class ListingsByWatchListView(APIView):
         )
 
 
-class CategoryListingsView(APIView):
+class CategoriesView(APIView):
     @extend_schema(
         summary="Retrieve all categories",
         description="This endpoint retrieves all categories",
@@ -158,8 +202,9 @@ class CategoryListingsView(APIView):
         categories = await sync_to_async(list)(Category.objects.values("name", "slug"))
         return CustomResponse.success(message="Categories fetched", data=categories)
 
+
 class CategoryListingsView(APIView):
-    serializer = ListingSerializer
+    serializer_class = ListingSerializer
     permission_classes = (IsGuestOrAuthenticatedCustom,)
 
     @extend_schema(
@@ -167,8 +212,8 @@ class CategoryListingsView(APIView):
         description="This endpoint retrieves all listings in a particular category. Use slug 'other' for category other",
     )
     async def get(self, request, *args, **kwargs):
-        user = request.user
-        slug = kwargs.get('slug')
+        client = request.user
+        slug = kwargs.get("slug")
 
         # listings with category 'other' have category column as null
         category = None
@@ -177,9 +222,26 @@ class CategoryListingsView(APIView):
             if not category:
                 raise RequestError(err_msg="Invalid category", status_code=404)
 
-        listings = await sync_to_async(list)(Listing.objects.filter(category_id=category.id).select_related("auctioneer", "auctioneer__avatar", "category", "image"))
-        serializer = self.serializer_class(listings, many=True)
-        return CustomResponse.success(message="Category Listings fetched", data=serializer.data)
+        listings = await sync_to_async(list)(
+            Listing.objects.filter(category_id=category.id)
+            .select_related("auctioneer", "auctioneer__avatar", "category", "image")
+            .prefetch_related(
+                Prefetch(
+                    "watchlists",
+                    queryset=WatchList.objects.filter(
+                        Q(user_id=client.id if client else None)
+                        | Q(guest_id=client.id if client else None)
+                    ),
+                    to_attr="watchlist",
+                )
+            )
+        )
+        serializer = self.serializer_class(
+            listings, many=True, context={"client": client}
+        )
+        return CustomResponse.success(
+            message="Category Listings fetched", data=serializer.data
+        )
 
 
 # class BidsView(Controller):

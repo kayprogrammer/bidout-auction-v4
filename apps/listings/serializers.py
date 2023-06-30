@@ -2,7 +2,10 @@ from django.db.models import Q
 from typing import Optional
 from rest_framework import serializers
 
-from apps.listings.models import Listing
+from asgiref.sync import sync_to_async
+
+from apps.listings.models import WatchList
+
 
 class ListingSerializer(serializers.Serializer):
     auctioneer = serializers.SerializerMethodField()
@@ -34,7 +37,7 @@ class ListingSerializer(serializers.Serializer):
         client = self.context["client"]
         watchlist_status = False
         if client:
-            watchlist_status = Listing.objects.filter(slug="aaa").first()
+            watchlist_status = True if len(obj.watchlist) > 0 else False
         return watchlist_status
 
 

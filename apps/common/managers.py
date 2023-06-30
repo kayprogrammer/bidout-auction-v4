@@ -19,13 +19,3 @@ class GetOrNoneManager(models.Manager):
 
     async def get_or_none(self, **kwargs):
         return await self.get_queryset().get_or_none(**kwargs)
-
-
-# class GetOrNoneManager(models.Manager):
-#     """Adds get_or_none method to objects"""
-
-#     async def get_or_none(self, **kwargs):
-#         try:
-#             return await self.aget(**kwargs)
-#         except self.model.DoesNotExist:
-#             return None
