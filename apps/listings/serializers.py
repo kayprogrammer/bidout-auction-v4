@@ -48,3 +48,16 @@ class ListingDetailSerializer(serializers.Serializer):
 
 class WatchlistCreateSerializer(serializers.Serializer):
     slug = serializers.SlugField()
+
+
+class BidDataSerializer(serializers.Serializer):
+    user = serializers.SerializerMethodField()
+    amount = serializers.DecimalField(max_digits=10, decimal_places=2)
+
+    def get_user(self, obj):
+        return {"name": obj.user.full_name, "avatar": obj.user.get_avatar}
+
+
+class BidSerializer(serializers.Serializer):
+    listing = serializers.CharField()
+    bids = BidDataSerializer(many=True)

@@ -6,6 +6,7 @@ from apps.common.responses import CustomResponse
 from apps.common.utils import IsGuestOrAuthenticatedCustom, is_int
 from .models import Category, Listing, WatchList
 from .serializers import (
+    BidSerializer,
     ListingDetailSerializer,
     ListingSerializer,
     WatchlistCreateSerializer,
@@ -244,27 +245,31 @@ class CategoryListingsView(APIView):
         )
 
 
-# class BidsView(Controller):
-#     path = "/{slug:str}/bids"
+class BidsView(APIView):
+    serializer_class = BidSerializer
 
-#     @get(
-#         summary="Retrieve bids in a listing",
-#         description="This endpoint retrieves at most 3 bids from a particular listing.",
-#     )
-#     async def retrieve_listing_bids(
-#         self, db: AsyncSession, slug: str
-#     ) -> BidsResponseSchema:
-#         listing = await listing_manager.get_by_slug(db, slug)
-#         if not listing:
-#             raise RequestError(err_msg="Listing does not exist!", status_code=404)
+    @extend_schema(
+        summary="Retrieve bids in a listing",
+        description="This endpoint retrieves at most 3 bids from a particular listing.",
+    )
+    async def get(self, request, *args, **kwargs):
+        listing = (
+            await Listing.objects.select_related(
+                "auctioneer", "auctioneer__avatar", "category", "image"
+            )
+            .prefetch_related("bids")
+            .get_or_none(slug=kwargs.get("slug"))
+        )
+        if not listing:
+            raise RequestError(err_msg="Listing does not exist!", status_code=404)
 
-#         bids = (await bid_manager.get_by_listing_id(db, listing.id))[:3]
+        bids = listing.bids.all()[:3]
 
-#         data = BidsResponseDataSchema(
-#             listing=listing.name,
-#             bids=bids,
-#         )
-#         return BidsResponseSchema(message="Listing Bids fetched", data=data)
+        serializer = self.serializer_class({"listing": listing.name, "bids": bids})
+        return CustomResponse.success(
+            message="Listing Bids fetched", data=serializer.data
+        )
+
 
 #     @post(
 #         summary="Add a bid to a listing",
@@ -312,11 +317,3 @@ class CategoryListingsView(APIView):
 #             db, listing, {"highest_bid": amount, "bids_count": bids_count}
 #         )
 #         return BidResponseSchema(message="Bid added to listing", data=bid)
-
-
-# listings_handlers = [
-#     ListingsView,
-#     ListingsByWatchListView,
-#     CategoryListingsView,
-#     BidsView,
-# ]
