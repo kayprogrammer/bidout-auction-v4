@@ -5,6 +5,8 @@ from apps.accounts.models import Jwt, Otp
 from apps.common.utils import TestUtil
 from unittest import mock
 
+from apps.listings.models import WatchList
+
 
 class TestListings(APITestCase):
     listings_url = "/api/v4/listings/"
@@ -16,7 +18,9 @@ class TestListings(APITestCase):
 
     def setUp(self):
         verified_user = TestUtil.verified_user()
+        self.verified_user = verified_user
         self.listing = TestUtil.create_listing(verified_user)["listing"]
+        self.auth_token = TestUtil.auth_token(verified_user)
 
     def test_retrieve_all_listings(self):
         # Verify that all listings are retrieved successfully
@@ -68,5 +72,52 @@ class TestListings(APITestCase):
                     },
                     "related_listings": [],
                 },
+            },
+        )
+
+    def test_get_user_watchlists_listng(self):
+        listing = self.listing
+        user_id = self.verified_user.id
+
+        WatchList.objects.create(user_id=user_id, listing_id=listing.id)
+        bearer = {"HTTP_AUTHORIZATION": f"Bearer {self.auth_token}"}
+
+        response = self.client.get(self.watchlist_url, **bearer)
+        self.assertEqual(response.status_code, 200)
+        result = response.json()
+        self.assertEqual(result["status"], "success")
+        self.assertEqual(result["message"], "Watchlist Listings fetched")
+        data = result["data"]
+        self.assertGreater(len(data), 0)
+        self.assertTrue(any(isinstance(obj["name"], str) for obj in data))
+
+    def test_create_or_remove_user_watchlists_listng(self):
+        listing = self.listing
+
+        # Verify that the endpoint fails with an invalid slug
+        bearer = {"HTTP_AUTHORIZATION": f"Bearer {self.auth_token}"}
+        response = self.client.post(
+            self.watchlist_url, data={"slug": "invalid_slug"}, **bearer
+        )
+        self.assertEqual(response.status_code, 404)
+        self.assertEqual(
+            response.json(),
+            {
+                "status": "failure",
+                "message": "Listing does not exist!",
+            },
+        )
+
+        # Verify that the watchlist was created successfully
+        response = self.client.post(
+            self.watchlist_url, data={"slug": listing.slug}, **bearer
+        )
+        self.assertEqual(response.status_code, 201)
+        self.assertEqual(
+            response.json(),
+            {
+                "status": "success",
+                "message": "Listing added to user watchlist",
+                "data": {"guestuser_id": None},
             },
         )

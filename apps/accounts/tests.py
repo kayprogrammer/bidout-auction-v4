@@ -285,8 +285,8 @@ class TestAccounts(APITestCase):
         auth_token = TestUtil.auth_token(self.verified_user)
 
         # Ensures if authorized user logs out successfully
-        self.bearer = {"HTTP_AUTHORIZATION": f"Bearer {auth_token}"}
-        response = self.client.get(self.logout_url, **self.bearer)
+        bearer = {"HTTP_AUTHORIZATION": f"Bearer {auth_token}"}
+        response = self.client.get(self.logout_url, **bearer)
         self.assertEqual(response.status_code, 200)
         self.assertEqual(
             response.json(),
