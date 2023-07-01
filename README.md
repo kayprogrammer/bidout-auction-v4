@@ -49,22 +49,16 @@ OR
     $ make test
 ```
 
-<!-- ## Docs
-#### Live Url: [BidOut Docs](https://bidout-litestar-api.cleverapps.io/) 
+## Docs
+#### Live Url: [BidOut Docs](https://bidout-drf-api.cleverapps.io/) 
 #### Swagger: [Documentation](https://swagger.io/docs/)
 
-![alt text](https://github.com/kayprogrammer/bidout-auction-v3/blob/main/display/display1.png?raw=true)
+![alt text](https://github.com/kayprogrammer/bidout-auction-v4/blob/main/display/display1.png?raw=true)
 
-![alt text](https://github.com/kayprogrammer/bidout-auction-v3/blob/main/display/display2.png?raw=true)
+![alt text](https://github.com/kayprogrammer/bidout-auction-v4/blob/main/display/display2.png?raw=true)
 
-![alt text](https://github.com/kayprogrammer/bidout-auction-v3/blob/main/display/display3.png?raw=true)
+![alt text](https://github.com/kayprogrammer/bidout-auction-v4/blob/main/display/display3.png?raw=true)
 
-![alt text](https://github.com/kayprogrammer/bidout-auction-v3/blob/main/display/display4.png?raw=true)
+![alt text](https://github.com/kayprogrammer/bidout-auction-v4/blob/main/display/display4.png?raw=true)
 
-![alt text](https://github.com/kayprogrammer/bidout-auction-v3/blob/main/display/display5.png?raw=true)
-
-![alt text](https://github.com/kayprogrammer/bidout-auction-v3/blob/main/display/display6.png?raw=true)
-
-![alt text](https://github.com/kayprogrammer/bidout-auction-v3/blob/main/display/display7.png?raw=true)
-
-![alt text](https://github.com/kayprogrammer/bidout-auction-v3/blob/main/display/display8.png?raw=true) -->
+![alt text](https://github.com/kayprogrammer/bidout-auction-v4/blob/main/display/display5.png?raw=true)
