@@ -62,3 +62,6 @@ OR
 ![alt text](https://github.com/kayprogrammer/bidout-auction-v4/blob/main/display/display4.png?raw=true)
 
 ![alt text](https://github.com/kayprogrammer/bidout-auction-v4/blob/main/display/display5.png?raw=true)
+
+## ADMIN
+![alt text](https://github.com/kayprogrammer/bidout-auction-v4/blob/main/display/admin.png?raw=true)

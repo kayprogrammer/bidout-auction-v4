@@ -6,11 +6,12 @@ from drf_spectacular.views import (
     SpectacularAPIView,
     SpectacularSwaggerView,
 )
-from drf_spectacular.utils import extend_schema, OpenApiParameter
+from drf_spectacular.utils import extend_schema
 from adrf.views import APIView
 import debug_toolbar
 
 from apps.common.responses import CustomResponse
+
 
 class HealthCheckView(APIView):
     @extend_schema(
@@ -20,6 +21,7 @@ class HealthCheckView(APIView):
     )
     async def get(self, request):
         return CustomResponse.success(message="pong")
+
 
 urlpatterns = [
     path("schema/", SpectacularAPIView.as_view(), name="schema"),
@@ -34,7 +36,6 @@ urlpatterns = [
     path("api/v4/listings/", include("apps.listings.urls")),
     path("api/v4/auctioneer/", include("apps.auctioneer.urls")),
     path("api/v4/healthcheck/", HealthCheckView.as_view()),
-
     path("__debug__/", include(debug_toolbar.urls)),
 ]
 
