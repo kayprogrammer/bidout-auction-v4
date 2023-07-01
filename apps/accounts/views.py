@@ -208,9 +208,9 @@ class LoginView(APIView):
             guest_user_watchlists_ids = await sync_to_async(list)(
                 WatchList.objects.filter(guest_id=guest_id)
                 .exclude(
-                    listing_id__in=WatchList.objects.filter(user=user).values_list(
-                        "listing_id", flat=True
-                    )
+                    listing_id__in=WatchList.objects.filter(user=user)
+                    .select_related("user", "guest")
+                    .values_list("listing_id", flat=True)
                 )
                 .select_related("user", "listing")
                 .values_list("listing_id", flat=True)

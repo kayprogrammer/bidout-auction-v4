@@ -1,10 +1,12 @@
 from django.db import models
 from django.core.exceptions import ValidationError
 from django.utils import timezone
+from django.core.validators import MinValueValidator
 from apps.accounts.models import User
 from apps.common.models import BaseModel, File, GuestUser
 from autoslug import AutoSlugField
 from apps.common.file_processors import FileProcessor
+from decimal import Decimal
 
 
 class Category(BaseModel):
@@ -30,7 +32,9 @@ class Listing(BaseModel):
 
     category = models.ForeignKey(Category, on_delete=models.SET_NULL, null=True)
 
-    price = models.DecimalField(max_digits=10, decimal_places=2)
+    price = models.DecimalField(
+        max_digits=10, decimal_places=2, validators=[MinValueValidator(Decimal("0.01"))]
+    )
     highest_bid = models.DecimalField(max_digits=10, decimal_places=2, default=0.00)
     bids_count = models.IntegerField(default=0)
     closing_date = models.DateTimeField(null=True)
@@ -69,7 +73,9 @@ class Bid(BaseModel):
     user = models.ForeignKey(User, related_name="bids", on_delete=models.CASCADE)
     listing = models.ForeignKey(Listing, related_name="bids", on_delete=models.CASCADE)
 
-    amount = models.DecimalField(max_digits=10, decimal_places=2)
+    amount = models.DecimalField(
+        max_digits=10, decimal_places=2, validators=[MinValueValidator(Decimal("0.01"))]
+    )
 
     def __str__(self):
         return f"{self.listing.name} - ${self.amount}"

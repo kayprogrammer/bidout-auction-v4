@@ -127,6 +127,7 @@ class ListingsByWatchListView(APIView):
                     "guest",
                     "listing",
                     "listing__auctioneer",
+                    "listing__auctioneer__avatar",
                     "listing__category",
                     "listing__image",
                 )

@@ -1,7 +1,9 @@
+from typing import Optional
 from django.utils.translation import gettext_lazy as _
 from rest_framework import serializers
 from apps.common.file_processors import FileProcessor
 from apps.common.file_types import ALLOWED_IMAGE_TYPES
+import pytz
 
 
 class ProfileSerializer(serializers.Serializer):
@@ -29,7 +31,7 @@ class ProfileSerializer(serializers.Serializer):
             raise serializers.ValidationError({"file_type": "Image type not allowed!"})
         return attrs
 
-    def get_file_upload_data(self, obj):
+    def get_file_upload_data(self, obj) -> Optional[dict]:
         avatar_id = obj.avatar_id
         if avatar_id:
             return FileProcessor.generate_file_signature(
@@ -46,7 +48,7 @@ class ListingCreateResponseSerializer(serializers.Serializer):
     desc = serializers.CharField()
     category = serializers.CharField()
     price = serializers.DecimalField(max_digits=10, decimal_places=2)
-    closing_date = serializers.DateTimeField()
+    closing_date = serializers.DateTimeField(default_timezone=pytz.timezone("UTC"))
     active = serializers.BooleanField(read_only=True)
     bids_count = serializers.IntegerField(read_only=True)
     file_upload_data = serializers.SerializerMethodField()
@@ -59,7 +61,7 @@ class ListingCreateResponseSerializer(serializers.Serializer):
             "avatar": auctioneer.get_avatar,
         }
 
-    def get_file_upload_data(self, obj):
+    def get_file_upload_data(self, obj) -> dict:
         return FileProcessor.generate_file_signature(
             key=obj.image_id,
             folder="listings",
