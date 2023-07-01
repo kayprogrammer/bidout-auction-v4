@@ -63,5 +63,5 @@ OR
 
 ![alt text](https://github.com/kayprogrammer/bidout-auction-v4/blob/main/display/display5.png?raw=true)
 
-## ADMIN
+## ADMIN PAGE
 ![alt text](https://github.com/kayprogrammer/bidout-auction-v4/blob/main/display/admin.png?raw=true)
