@@ -28,6 +28,11 @@ REST_FRAMEWORK = {
     "DEFAULT_PERMISSION_CLASSES": ("rest_framework.permissions.AllowAny",),
     "DEFAULT_SCHEMA_CLASS": "drf_spectacular.openapi.AutoSchema",
     "TEST_REQUEST_DEFAULT_FORMAT": "json",
+    "DEFAULT_THROTTLE_CLASSES": [
+        "rest_framework.throttling.AnonRateThrottle",
+        "rest_framework.throttling.UserRateThrottle",
+    ],
+    "DEFAULT_THROTTLE_RATES": {"anon": "5000/day", "user": "10000/day"},
 }
 
 # Application definition
@@ -71,6 +76,7 @@ CORS_ALLOW_HEADERS = (
     "accept",
     "origin",
     "authorization",
+    "guestuserid",
     "accept-encoding",
     "access-control-allow-origin",
     "content-disposition",
