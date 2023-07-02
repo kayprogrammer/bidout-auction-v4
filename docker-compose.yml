@@ -10,8 +10,10 @@ services:
       - .:/build
       - static_volume:/build/staticfiles
       - media_volume:/build/mediafiles
-    expose:
-      - "8000"
+    ports:
+      - "8000:8000"
+    environment:
+      - POSTGRES_SERVER=db
     env_file:
       - .env
     depends_on:
@@ -28,6 +30,12 @@ services:
       - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
     env_file:
       - .env
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
   pgadmin:
     container_name: pgadmin
     image: dpage/pgadmin4

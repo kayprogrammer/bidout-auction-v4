@@ -18,7 +18,7 @@ show-logs:
 	docker-compose logs
 
 serv:
-	uvicorn bidout_auction_v4.asgi:application --reload 
+	uvicorn bidout_auction_v4.asgi:application --reload
 
 mmig: # run with "make mmig" or "make mmig app='app'"
 	if [ -z "$(app)" ]; then \

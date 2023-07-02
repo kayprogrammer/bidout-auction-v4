@@ -11,8 +11,9 @@ python << END
 import sys
 import psycopg
 try:
-    psycopg.connect("postgresql://${POSTGRES_USER}:${POSTGRES_PASSWORD}@${POSTGRES_SERVER}:${POSTGRES_PORT}/${POSTGRES_DB}")
-except psycopg.OperationalError:
+    psycopg.connect("host=${POSTGRES_SERVER} port=${POSTGRES_PORT} dbname=${POSTGRES_DB} user=${POSTGRES_USER} password=${POSTGRES_PASSWORD}")
+except Exception as e:
+    print(e)
     sys.exit(-1)
 sys.exit(0)
 END
