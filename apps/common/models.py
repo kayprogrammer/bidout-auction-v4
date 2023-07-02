@@ -27,3 +27,7 @@ class File(BaseModel):
 class GuestUser(BaseModel):
     def __str__(self):
         return str(self.id)
+
+    @property
+    def is_authenticated(self):
+        return True
