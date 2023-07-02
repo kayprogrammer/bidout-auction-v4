@@ -1,4 +1,4 @@
-# BidOut Auction V4 (WORK IN PROGRESS)
+# BidOut Auction V4
 
 ![alt text](https://github.com/kayprogrammer/bidout-auction-v4/blob/main/display/django.png?raw=true)
 
