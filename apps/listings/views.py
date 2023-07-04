@@ -230,7 +230,7 @@ class CategoryListingsView(APIView):
                 raise RequestError(err_msg="Invalid category", status_code=404)
 
         listings = await sync_to_async(list)(
-            Listing.objects.filter(category_id=category.id)
+            Listing.objects.filter(category=category)
             .select_related("auctioneer", "auctioneer__avatar", "category", "image")
             .prefetch_related(
                 Prefetch(
