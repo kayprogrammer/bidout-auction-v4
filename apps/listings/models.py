@@ -68,6 +68,8 @@ class Listing(BaseModel):
             )
         return None
 
+    class Meta:
+        ordering = ["-created_at"]
 
 class Bid(BaseModel):
     user = models.ForeignKey(User, related_name="bids", on_delete=models.CASCADE)
