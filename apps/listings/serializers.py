@@ -28,7 +28,7 @@ class ListingSerializer(serializers.Serializer):
     category = serializers.CharField()
     price = serializers.DecimalField(max_digits=10, decimal_places=2)
     closing_date = serializers.DateTimeField(default_timezone=pytz.timezone("UTC"))
-    active = serializers.BooleanField(read_only=True)
+    active = serializers.SerializerMethodField()
     bids_count = serializers.IntegerField(read_only=True)
     highest_bid = serializers.DecimalField(
         max_digits=10, decimal_places=2, read_only=True
@@ -62,6 +62,11 @@ class ListingSerializer(serializers.Serializer):
         if client:
             watchlist_status = True if len(obj.watchlist) > 0 else False
         return watchlist_status
+
+    def get_active(self, obj) -> bool:
+        if obj.active and obj.time_left_seconds > 0:
+            return True
+        return False
 
     def validate_file_type(self, value):
         if value and not value in ALLOWED_IMAGE_TYPES:
