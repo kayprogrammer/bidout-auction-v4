@@ -1,4 +1,5 @@
 from django.contrib import admin
+from django.http import JsonResponse
 from django.urls import include, path
 from django.conf.urls.static import static
 from django.conf import settings
@@ -22,6 +23,21 @@ class HealthCheckView(APIView):
     async def get(self, request):
         return CustomResponse.success(message="pong")
 
+
+def handler404(request, exception=None):
+    response = JsonResponse({"status": "failure", "message": "Not Found"})
+    response.status_code = 404
+    return response
+
+
+def handler500(request, exception=None):
+    response = JsonResponse({"status": "failure", "message": "Server Error"})
+    response.status_code = 500
+    return response
+
+
+handler404 = handler404
+handler500 = handler500
 
 urlpatterns = [
     path("schema/", SpectacularAPIView.as_view(), name="schema"),
