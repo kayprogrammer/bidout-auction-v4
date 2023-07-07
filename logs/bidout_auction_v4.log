@@ -5435,3 +5435,8 @@ django.core.exceptions.DisallowedHost: Invalid HTTP_HOST header: '0.0.0.0:8000'.
 2023-07-02 19:59:32,777 django.request ERROR    Internal Server Error: /api/v4/general/site-detail/
 2023-07-02 19:59:32,999 django.request ERROR    Internal Server Error: /api/v4/general/reviews/
 2023-07-02 19:59:33,058 django.request ERROR    Internal Server Error: /api/v4/listings/
+2023-07-07 18:35:01,846 django.request WARNING  Unauthorized: /api/v4/auctioneer/listings/string-3/
+2023-07-07 18:36:48,064 django.request WARNING  Unprocessable Entity: /api/v4/auctioneer/listings/string-3/
+2023-07-07 18:36:53,971 django.request WARNING  Not Found: /api/v4/auctioneer/listings/string-3/
+2023-07-07 18:37:16,765 django.request WARNING  Not Found: /api/v4/auctioneer/listings/string-3/
+2023-07-07 18:37:47,463 django.request WARNING  Unprocessable Entity: /api/v4/auctioneer/listings/string-3/

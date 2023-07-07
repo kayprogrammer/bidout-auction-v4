@@ -7,7 +7,7 @@ from apps.common.utils import (
     IsAuthenticatedCustom,
     is_int,
 )
-from apps.listings.models import Bid, Category, Listing, WatchList
+from apps.listings.models import Category, Listing, WatchList
 from apps.listings.serializers import BidSerializer, ListingSerializer
 from .serializers import (
     ListingCreateResponseSerializer,
@@ -154,10 +154,10 @@ class UpdateListingView(APIView):
         summary="Update a listing",
         description="This endpoint update a particular listing. Do note that only file type is optional.",
     )
-    async def put(self, request, *args, **kwargs):
+    async def patch(self, request, *args, **kwargs):
         client = request.user
         serializer = self.serializer_class(
-            data=request.data, context={"request": request}
+            data=request.data, context={"request": request}, partial=True
         )
         serializer.is_valid(raise_exception=True)
         data = serializer.validated_data
@@ -171,9 +171,6 @@ class UpdateListingView(APIView):
 
         if client != listing.auctioneer:
             raise RequestError(err_msg="This listing doesn't belong to you!")
-
-        # Remove keys with values of None
-        data = {k: v for k, v in data.items() if v not in (None, "")}
 
         if category:
             if not category == "other":

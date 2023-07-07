@@ -38,13 +38,6 @@ class ListingSerializer(serializers.Serializer):
     watchlist = serializers.SerializerMethodField(read_only=True)
     file_type = serializers.CharField(write_only=True)
 
-    def get_fields(self):
-        fields = super().get_fields()
-        request = self.context.get("request")
-        if request and request.method == "PUT":
-            fields["file_type"].required = False
-        return fields
-
     def get_auctioneer(self, obj) -> dict:
         auctioneer = obj.auctioneer
         return {
