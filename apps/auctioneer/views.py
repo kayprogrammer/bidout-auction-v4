@@ -49,6 +49,9 @@ class ProfileView(APIView):
             file = user.avatar
             if not file:
                 file = await File.objects.acreate(resource_type=file_type)
+            else:
+                file.resource_type = file_type
+                await file.asave()
             data.update({"avatar": file})
             data.pop("file_type")
         for attr, value in data.items():
@@ -192,6 +195,9 @@ class UpdateListingView(APIView):
             file = listing.image
             if not file:
                 file = await File.objects.acreate(resource_type=file_type)
+            else:
+                file.resource_type = file_type
+                await file.asave()
             data.update({"image_id": file.id})
         data.pop("file_type", None)
 
