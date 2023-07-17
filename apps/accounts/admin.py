@@ -22,7 +22,7 @@ class UserAdmin(BaseUserAdmin):
     ordering = ["email"]
 
     list_display = [
-        "pk",
+        "id",
         "first_name",
         "last_name",
         "email",
@@ -74,7 +74,7 @@ class UserAdmin(BaseUserAdmin):
                 "classes": ("wide",),
                 "fields": (
                     "first_name",
-                    "first_name",
+                    "last_name",
                     "email",
                     "password1",
                     "password2",
@@ -85,7 +85,7 @@ class UserAdmin(BaseUserAdmin):
         ),
     )
     readonly_fields = ("created_at", "updated_at")
-    search_fields = ["first_name", "first_name", "email", "name"]
+    search_fields = ["first_name", "first_name", "email"]
 
 
 admin.site.register(User, UserAdmin)
