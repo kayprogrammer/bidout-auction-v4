@@ -5440,3 +5440,7 @@ django.core.exceptions.DisallowedHost: Invalid HTTP_HOST header: '0.0.0.0:8000'.
 2023-07-07 18:36:53,971 django.request WARNING  Not Found: /api/v4/auctioneer/listings/string-3/
 2023-07-07 18:37:16,765 django.request WARNING  Not Found: /api/v4/auctioneer/listings/string-3/
 2023-07-07 18:37:47,463 django.request WARNING  Unprocessable Entity: /api/v4/auctioneer/listings/string-3/
+2023-07-20 01:04:18,185 django.utils.autoreload INFO     Watching for file changes with StatReloader
+2023-07-20 01:05:23,658 django.utils.autoreload INFO     Watching for file changes with StatReloader
+2023-07-20 01:23:46,697 django.utils.autoreload INFO     Watching for file changes with StatReloader
+2023-07-20 01:28:33,727 django.utils.autoreload INFO     Watching for file changes with StatReloader

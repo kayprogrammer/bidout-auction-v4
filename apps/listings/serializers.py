@@ -1,6 +1,6 @@
 from django.utils import timezone
 from drf_spectacular.types import OpenApiTypes
-from drf_spectacular.utils import extend_schema_serializer, OpenApiExample
+from django.utils.translation import gettext_lazy as _
 
 from typing import Optional
 from rest_framework import serializers
@@ -8,21 +8,12 @@ from rest_framework import serializers
 from apps.common.file_types import ALLOWED_IMAGE_TYPES
 import pytz
 
-# @extend_schema_serializer(
-#     examples = [
-#          OpenApiExample(
-#             'Valid example 1',
-#             summary='short summary',
-#             description='longer description',
-#             value={
-#                 'price': "1000.00",
-#             },
-#         ),
-#     ]
-# )
+
 class ListingSerializer(serializers.Serializer):
     auctioneer = serializers.SerializerMethodField()
-    name = serializers.CharField()
+    name = serializers.CharField(
+        max_length=70, error_messages={"max_length": _("{max_length} characters max.")}
+    )
     slug = serializers.SlugField(read_only=True)
     desc = serializers.CharField()
     category = serializers.CharField()
