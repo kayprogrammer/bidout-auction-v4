@@ -25,7 +25,7 @@ class ListingSerializer(serializers.Serializer):
         max_digits=10, decimal_places=2, read_only=True
     )
     time_left_seconds = serializers.IntegerField(read_only=True)
-    image = serializers.SerializerMethodField(read_only=True)
+    image = serializers.SerializerMethodField(read_only=True, default="https://img.url")
     watchlist = serializers.SerializerMethodField(read_only=True)
     file_type = serializers.CharField(write_only=True)
 
@@ -37,7 +37,7 @@ class ListingSerializer(serializers.Serializer):
             "avatar": auctioneer.get_avatar,
         }
 
-    def get_image(self, obj) -> Optional[OpenApiTypes.URI]:
+    def get_image(self, obj) -> str:
         return obj.get_image
 
     def get_watchlist(self, obj) -> bool:
