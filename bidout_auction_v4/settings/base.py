@@ -53,6 +53,7 @@ THIRD_PARTY_APPS = [
     "cloudinary",
     "debug_toolbar",
     "drf_spectacular",
+    "whitenoise.runserver_nostatic",
 ]
 
 LOCAL_APPS = [
@@ -188,7 +189,7 @@ MEDIA_URL = "/media/"
 STATICFILES_DIRS = [
     os.path.join(BASE_DIR, "static/"),
 ]
-
+STATICFILES_STORAGE = "whitenoise.storage.CompressedStaticFilesStorage"
 MEDIA_ROOT = os.path.join(BASE_DIR, "static/media")
 
 # Default primary key field type

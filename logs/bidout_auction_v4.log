@@ -5444,3 +5444,11 @@ django.core.exceptions.DisallowedHost: Invalid HTTP_HOST header: '0.0.0.0:8000'.
 2023-07-20 01:05:23,658 django.utils.autoreload INFO     Watching for file changes with StatReloader
 2023-07-20 01:23:46,697 django.utils.autoreload INFO     Watching for file changes with StatReloader
 2023-07-20 01:28:33,727 django.utils.autoreload INFO     Watching for file changes with StatReloader
+2023-11-26 17:58:13,150 django.request WARNING  Not Found: /static/vendor/adminlte/css/adminlte.min.css
+2023-11-26 17:58:13,198 django.request WARNING  Not Found: /static/jazzmin/css/main.css
+2023-11-26 17:58:13,222 django.request WARNING  Not Found: /static/admin/js/vendor/jquery/jquery.js
+2023-11-26 17:58:13,329 django.request WARNING  Not Found: /static/vendor/bootstrap/js/bootstrap.min.js
+2023-11-26 17:58:13,348 django.request WARNING  Not Found: /static/media/banner2-icon3.png
+2023-11-26 17:58:13,388 django.request WARNING  Not Found: /static/vendor/fontawesome-free/webfonts/fa-solid-900.woff2
+2023-11-26 17:58:13,428 django.request WARNING  Not Found: /static/vendor/fontawesome-free/webfonts/fa-solid-900.woff
+2023-11-26 17:58:13,469 django.request WARNING  Not Found: /static/vendor/fontawesome-free/webfonts/fa-solid-900.ttf
