@@ -2,7 +2,7 @@
     "version": 2,
     "builds": [
         {
-            "src": "bidout/asgi.py",
+            "src": "bidout_auction_v4/asgi.py",
             "use": "@vercel/python",
             "config": {
                 "runtime": "python3.9",
@@ -20,7 +20,7 @@
     "routes": [
         {
             "src": "/(.*)",
-            "dest": "bidout/asgi.py"
+            "dest": "bidout_auction_v4/asgi.py"
         }
     ]
 }
