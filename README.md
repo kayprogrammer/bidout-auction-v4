@@ -7,6 +7,7 @@
 #### DJANGO REST FRAMEWORK DOCS: [Documentation](https://www.django-rest-framework.org/)
 
 #### PG ADMIN: [Documentation](https://pgadmin.org) 
+#### Swagger: [Documentation](https://swagger.io/docs/)
 
 
 ## How to run locally
@@ -50,9 +51,8 @@ OR
 ```
 
 ## Docs
-#### API Url: [BidOut Docs](https://bidout-drf-api.vercel.app/) 
-#### Swagger: [Documentation](https://swagger.io/docs/)
-
+#### SWAGGER API Url: [BidOut Docs](https://bidout-drf-api.vercel.app/) 
+#### POSTMAN API Url: [BidOut Docs](https://bit.ly/bidout-api)
 ![alt text](https://github.com/kayprogrammer/bidout-auction-v4/blob/main/display/display1.png?raw=true)
 
 ![alt text](https://github.com/kayprogrammer/bidout-auction-v4/blob/main/display/display2.png?raw=true)
