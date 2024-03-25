@@ -33,9 +33,7 @@ class Util:
 
         email_message = EmailMessage(subject=subject, body=message, to=[user.email])
         email_message.content_subtype = "html"
-        download_thread = threading.Thread(target=email_message.send, name="Downloader")
-        download_thread.start()
-        # EmailThread(email_message).start()
+        EmailThread(email_message).start()
 
     async def send_password_change_otp(user):
         subject = "Your account password reset email"
